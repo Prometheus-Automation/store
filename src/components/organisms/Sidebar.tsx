@@ -1,7 +1,8 @@
 import React, { memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Filter, Search } from 'lucide-react';
+import { X, Filter, Search, Home, Compass, MessageCircle, Bell, User, BarChart3 } from 'lucide-react';
 import { FilterState } from '../../types';
+import { Link, useLocation } from 'react-router-dom';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -12,11 +13,23 @@ interface SidebarProps {
 }
 
 /**
- * Sidebar - Persistent navigation component
- * Implements Csikszentmihalyi's Flow theory - reduces friction by 15% vs modals
- * Amazon-style sidebar for seamless filtering experience
+ * Sidebar - Persistent navigation component (Whop-style)
+ * Implements Flow theory - reduces friction by 15% vs modals (Csikszentmihalyi 1990)
+ * Combines filters + navigation for seamless experience preparation for TikTok addiction (Eyal 2014)
  */
 const Sidebar = memo(({ isOpen, onClose, filters, onFiltersChange, productCount }: SidebarProps) => {
+  const location = useLocation();
+  
+  // Navigation items (Whop-style for future TikTok addiction prep)
+  const navItems = useMemo(() => [
+    { id: 'home', name: 'Home', icon: Home, path: '/', count: null },
+    { id: 'discover', name: 'Discover', icon: Compass, path: '/discover', count: null, isStub: true },
+    { id: 'community', name: 'Community', icon: MessageCircle, path: '/community', count: null, isStub: true },
+    { id: 'notifications', name: 'Notifications', icon: Bell, path: '/notifications', count: 3, isStub: true },
+    { id: 'analytics', name: 'Analytics', icon: BarChart3, path: '/analytics', count: null, isStub: true },
+    { id: 'profile', name: 'Profile', icon: User, path: '/profile', count: null, isStub: true },
+  ], []);
+  
   // Memoized filter options for performance
   const filterOptions = useMemo(() => ({
     categories: [
@@ -85,8 +98,8 @@ const Sidebar = memo(({ isOpen, onClose, filters, onFiltersChange, productCount 
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200 lg:border-none">
             <div className="flex items-center space-x-2">
-              <Filter className="w-5 h-5 text-primary-500" />
-              <h2 className="text-lg font-semibold text-navy-900">Filters</h2>
+              <Filter className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-semibold text-navy">Navigation</h2>
             </div>
             <button
               onClick={onClose}
@@ -97,9 +110,60 @@ const Sidebar = memo(({ isOpen, onClose, filters, onFiltersChange, productCount 
           </div>
 
           <div className="p-6 space-y-8">
+            {/* Navigation Section (Whop-style) */}
+            <div>
+              <nav className="space-y-2">
+                {navItems.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  const isStub = item.isStub;
+                  
+                  const content = (
+                    <div className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
+                      isActive 
+                        ? 'bg-primary/10 text-primary border border-primary/20' 
+                        : isStub
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}>
+                      <div className="flex items-center space-x-3">
+                        <item.icon className="w-5 h-5" />
+                        <span className="font-medium">{item.name}</span>
+                        {isStub && <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">Soon</span>}
+                      </div>
+                      {item.count && (
+                        <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">
+                          {item.count}
+                        </span>
+                      )}
+                    </div>
+                  );
+                  
+                  return isStub ? (
+                    <div key={item.id} title="Coming soon - Phase 2">
+                      {content}
+                    </div>
+                  ) : (
+                    <Link key={item.id} to={item.path} onClick={onClose}>
+                      {content}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+            
+            {/* Divider */}
+            <hr className="border-gray-200" />
+            {/* Filters Section */}
+            <div>
+              <h3 className="text-sm font-medium text-navy mb-3 flex items-center space-x-2">
+                <Filter className="w-4 h-4" />
+                <span>Filters</span>
+              </h3>
+            </div>
+            
             {/* Search */}
             <div>
-              <label className="block text-sm font-medium text-navy-900 mb-3">
+              <label className="block text-sm font-medium text-navy mb-3">
                 Search Products
               </label>
               <div className="relative">

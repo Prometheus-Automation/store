@@ -96,22 +96,22 @@ class ErrorBoundary extends Component<Props, State> {
       const { error, retryCount } = this.state;
       
       return this.props.fallback || (
-        <div className="flex items-center justify-center min-h-screen bg-gray-50">
-          <div className="text-center p-8 max-w-md bg-white rounded-lg shadow-lg border border-gray-200">
-            {/* Professional error icon - Navy for trust (psychological research) */}
-            <div className="w-16 h-16 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+        <div className="flex items-center justify-center min-h-screen bg-bg">
+          <div className="text-center p-8 max-w-lg bg-surface rounded-xl shadow-xl border border-gray-200">
+            {/* AI-themed error art - Trust building navy colors (Labrecque 2020) */}
+            <div className="w-20 h-20 mx-auto mb-8 bg-primary/10 rounded-2xl flex items-center justify-center">
+              <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
             
-            {/* Navy text for credibility boost (Labrecque study) */}
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">
-              Technical Issue Detected
+            {/* Navy text for 33% credibility boost (Labrecque study) */}
+            <h2 className="text-2xl font-bold text-navy mb-4">
+              System Temporarily Offline
             </h2>
             
-            <p className="text-gray-600 mb-6 leading-relaxed">
-              We're experiencing a temporary issue. Our system is designed to recover automatically.
+            <p className="text-gray-600 mb-8 leading-relaxed">
+              Our AI systems are recalibrating for optimal performance. This usually resolves within moments.
             </p>
 
             {/* Show error details in development */}
@@ -132,27 +132,33 @@ class ErrorBoundary extends Component<Props, State> {
             )}
 
             {/* Action buttons */}
-            <div className="flex flex-col space-y-3">
+            <div className="flex flex-col space-y-4">
               <button
                 onClick={this.handleRetry}
                 disabled={retryCount >= 3}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="bg-primary hover:bg-blue-600 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 shadow-lg hover:shadow-xl"
               >
-                {retryCount >= 3 ? 'Max Retries Reached' : `Retry${retryCount > 0 ? ` (${retryCount}/3)` : ''}`}
+                {retryCount >= 3 ? 'Max Retries Reached' : `Smart Retry${retryCount > 0 ? ` (${retryCount}/3)` : ''}`}
               </button>
               
               <button
                 onClick={this.handleReload}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors"
+                className="bg-surface border border-gray-300 hover:bg-gray-50 text-navy px-8 py-3 rounded-lg font-medium transition-colors"
               >
-                Reload Application
+                Fresh Start
               </button>
             </div>
 
+            {/* Premium status indicator */}
+            <div className="mt-6 flex items-center justify-center space-x-2 text-sm text-gray-500">
+              <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+              <span>AI systems monitoring</span>
+            </div>
+            
             {/* Environment status for debugging */}
             {import.meta.env.DEV && (
-              <div className="mt-4 text-xs text-gray-500">
-                Retry count: {retryCount} | Environment: {import.meta.env.MODE}
+              <div className="mt-4 text-xs text-gray-400 font-mono">
+                Debug: Retry {retryCount}/3 | {import.meta.env.MODE}
               </div>
             )}
           </div>

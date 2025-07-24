@@ -7,25 +7,13 @@ export default {
   darkMode: 'class', // Enable class-based dark mode for premium feel
   theme: {
     extend: {
-      // Psychological color palette based on Labrecque's 2020 study
+      // Psychological color palette - Trust boost 33% (Labrecque 2020)
       colors: {
-        // Primary trust colors (blue increases credibility by 33%)
-        navy: {
-          50: '#f0f4f8',
-          100: '#d9e2ec',
-          500: '#334155',
-          700: '#1e293b',
-          900: '#001f3f', // Primary navy for headers/text
-        },
-        primary: {
-          50: '#e6f7ff',
-          100: '#b3e8ff',
-          400: '#33ccff',
-          500: '#00bfff', // Innovation/calm CTA color
-          600: '#0099cc',
-          700: '#007399',
-        },
-        // Premium neutral background (high contrast >4.5:1 WCAG)
+        // Navy for trust and credibility (Labrecque et al. 2020)
+        navy: '#001f3f',
+        // Primary innovation blue for CTAs (calm + intelligent)
+        primary: '#00bfff', 
+        // Premium neutral background (>4.5:1 contrast WCAG AA)
         bg: '#f8fafc',
         surface: '#ffffff',
         // Gray scale for optimal readability

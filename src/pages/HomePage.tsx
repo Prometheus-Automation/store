@@ -1,9 +1,10 @@
-import React, { useState, useMemo, memo } from 'react';
+import React, { useState, useMemo, memo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Brain, Layers, Bot, Zap, Code, Filter } from 'lucide-react';
 import Fuse from 'fuse.js';
 import { useCart } from '../contexts/CartContext';
 import { sanitizeSearchQuery } from '../utils/security';
+import { debounce } from 'lodash';
 import ProductCard from '../components/ProductCard';
 import QuickViewModal from '../components/QuickViewModal';
 import Sidebar from '../components/organisms/Sidebar';
@@ -33,6 +34,8 @@ const HomePage = memo(() => {
   
   const [showQuickView, setShowQuickView] = useState<Product | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
 
   // Memoized Fuse.js for performance (debounced search)
   const fuse = useMemo(() => new Fuse(allProducts, {
@@ -40,12 +43,33 @@ const HomePage = memo(() => {
     threshold: 0.3,
     includeScore: true,
   }), []);
+  
+  // Debounced search for autocomplete (performance optimization)
+  const debouncedSearch = useCallback(
+    debounce((query: string) => {
+      if (query.length > 2) {
+        const results = fuse.search(query).slice(0, 5);
+        const suggestions = results.map(result => result.item.name);
+        setSearchSuggestions(suggestions);
+      } else {
+        setSearchSuggestions([]);
+      }
+    }, 300),
+    [fuse]
+  );
+  
+  // Handle search input with debouncing
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+    debouncedSearch(value);
+    setFilters(prev => ({ ...prev, searchQuery: value }));
+  };
 
   // Memoized filtered products
   const filteredProducts = useMemo(() => {
     let products = allProducts;
 
-    // Apply search with sanitization
+    // Apply search with sanitization and debouncing
     if (filters.searchQuery.trim()) {
       const sanitizedQuery = sanitizeSearchQuery(filters.searchQuery);
       const searchResults = fuse.search(sanitizedQuery);

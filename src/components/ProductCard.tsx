@@ -22,7 +22,9 @@ const ProductCard = memo(({ product, onQuickView, onAddToCart }: ProductCardProp
   const [isLiked, setIsLiked] = useState(false);
 
   // Handle image loading errors with fallback
+  // Enhanced image error handling with fallback (Unsplash URLs fail-safe)
   const handleImageError = () => {
+    console.warn(`Image failed to load for product: ${product.name}`);
     setImageError(true);
   };
 
@@ -58,15 +60,13 @@ const ProductCard = memo(({ product, onQuickView, onAddToCart }: ProductCardProp
             loading="lazy"
           />
         ) : (
-          // Fallback for broken images - gray placeholder
-          <div className="w-full h-48 flex items-center justify-center bg-gray-100">
-            <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-2 bg-gray-200 rounded-lg flex items-center justify-center">
-                <Eye className="w-6 h-6 text-gray-400" />
-              </div>
-              <span className="text-sm text-gray-500">Preview</span>
-            </div>
-          </div>
+          // Professional fallback with navy trust colors (Labrecque 2020)
+          <img
+            src="/images/fallback.png"
+            alt={`${product.name} - AI Product`}
+            className="w-full h-48 object-cover"
+            loading="lazy"
+          />
         )}
         
         {/* Hover actions - minimal and elegant */}
@@ -85,7 +85,7 @@ const ProductCard = memo(({ product, onQuickView, onAddToCart }: ProductCardProp
         <div>
           <Link 
             to={`/product/${product.id}`}
-            className="font-semibold text-navy-900 text-lg leading-tight mb-1 hover:text-primary-500 transition-colors block"
+            className="font-semibold text-navy text-lg leading-tight mb-1 hover:text-primary transition-colors block"
           >
             {product.name}
           </Link>
