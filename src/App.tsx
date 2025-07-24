@@ -889,12 +889,11 @@ function ProductDetailPage() {
       features: ['GPT-4 Access', 'DALL-E 3', 'Advanced Analytics', 'Code Interpreter', 'Custom GPTs'],
       stats: { users: '100M+', satisfaction: '98%', responseTime: '1.2s' },
       category: 'Language Model',
-      description: 'Perfect for creative writing, coding help, and general assistance',
+      description: 'ChatGPT Plus gives you access to GPT-4, the most advanced AI language model. Perfect for creative writing, code generation, complex problem-solving, and general assistance. Includes DALL-E 3 for image generation and custom GPTs for specialized tasks.',
       videoUrl: 'https://www.youtube.com/watch?v=C_78DM4vpdI',
       source: 'OpenAI',
       useCase: 'content',
-      difficulty: 'beginner',
-      description: 'ChatGPT Plus gives you access to GPT-4, the most advanced AI language model. Perfect for creative writing, code generation, complex problem-solving, and general assistance. Includes DALL-E 3 for image generation and custom GPTs for specialized tasks.'
+      difficulty: 'beginner'
     },
     {
       id: 2,
@@ -2426,7 +2425,7 @@ function PrometheusApp() {
 
               {recommendations.length > 0 ? (
                 <div className="space-y-4">
-                  {recommendations.map((product) => (
+                  {recommendations.map((product: any) => (
                     <div key={product.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex items-center justify-between">
                         <div>
@@ -2441,7 +2440,7 @@ function PrometheusApp() {
                           <div className="text-lg font-bold">${product.price}{product.unit}</div>
                           <motion.button
                             onClick={() => {
-                              addItem(product);
+                              addItem(product as Product);
                               setShowQuiz(false);
                             }}
                             className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
