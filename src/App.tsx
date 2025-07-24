@@ -942,7 +942,7 @@ function ProductDetailPage() {
     <div className="min-h-screen bg-gray-50">
       <SEO 
         title={product.name}
-        description={`${product.description || product.description} - ${product.tagline}. Price: $${product.price}${product.unit}. Rating: ${product.rating}/5.`}
+        description={`${product.description} - ${product.tagline}. Price: $${product.price}${product.unit}. Rating: ${product.rating}/5.`}
         keywords={`${product.name}, ${product.provider}, ${product.category}, AI model, ${product.useCase}, ${product.difficulty}`}
         url={`/product/${product.id}`}
         image={product.image}
@@ -1053,7 +1053,7 @@ function ProductDetailPage() {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Key Features</h3>
               <ul className="space-y-2">
-                {product.features?.map((feature, index) => (
+                {product.features?.map((feature: string, index: number) => (
                   <li key={index} className="flex items-center space-x-2">
                     <CheckCircle className="h-5 w-5 text-green-500" />
                     <span className="text-gray-700">{feature}</span>
@@ -1066,7 +1066,7 @@ function ProductDetailPage() {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
               <p className="text-gray-700 leading-relaxed">
-                {product.description || product.description}
+                {product.description}
               </p>
             </div>
 
@@ -1373,7 +1373,7 @@ function PrometheusApp() {
   
   // Enhanced filtering logic with Fuse.js search
   const getFilteredProducts = () => {
-    let filtered = activeCategory === 'all' ? allProducts : products[activeCategory] || [];
+    let filtered = activeCategory === 'all' ? allProducts : (products as any)[activeCategory] || [];
     
     // Apply search with fuzzy matching
     if (filters.searchQuery) {
@@ -1434,27 +1434,27 @@ function PrometheusApp() {
     // Goal-based recommendations with enhanced logic
     const goalValue = goalAnswer.value || goalAnswer;
     if (goalValue === 'productivity' || goalValue === 0) {
-      recommendations = allProducts.filter(p => 
+      recommendations = allProducts.filter((p: any) => 
         (p.useCase === 'productivity' || p.category === 'Workflow' || p.category === 'Data' || 
-         p.features.some(f => f.toLowerCase().includes('automation'))) && 
+         p.features.some((f: string) => f.toLowerCase().includes('automation'))) && 
         budgetFilter(p)
       );
     } else if (goalValue === 'sales' || goalValue === 1) {
-      recommendations = allProducts.filter(p => 
+      recommendations = allProducts.filter((p: any) => 
         (p.useCase === 'sales' || p.category === 'Sales' || 
-         p.features.some(f => f.toLowerCase().includes('sales') || f.toLowerCase().includes('lead'))) && 
+         p.features.some((f: string) => f.toLowerCase().includes('sales') || f.toLowerCase().includes('lead'))) && 
         budgetFilter(p)
       );
     } else if (goalValue === 'support' || goalValue === 2) {
-      recommendations = allProducts.filter(p => 
+      recommendations = allProducts.filter((p: any) => 
         (p.useCase === 'support' || p.category === 'Customer Service' || 
-         p.features.some(f => f.toLowerCase().includes('support') || f.toLowerCase().includes('chat'))) && 
+         p.features.some((f: string) => f.toLowerCase().includes('support') || f.toLowerCase().includes('chat'))) && 
         budgetFilter(p)
       );
     } else {
-      recommendations = allProducts.filter(p => 
+      recommendations = allProducts.filter((p: any) => 
         (p.useCase === 'content' || p.category === 'Language Model' || p.category === 'Marketing' || 
-         p.features.some(f => f.toLowerCase().includes('content') || f.toLowerCase().includes('writing'))) && 
+         p.features.some((f: string) => f.toLowerCase().includes('content') || f.toLowerCase().includes('writing'))) && 
         budgetFilter(p)
       );
     }
@@ -1871,7 +1871,7 @@ function PrometheusApp() {
     }
   ];
 
-  const handleQuizAnswer = (answer) => {
+  const handleQuizAnswer = (answer: any) => {
     const newAnswers = [...quizAnswers, answer];
     setQuizAnswers(newAnswers);
     
@@ -2069,7 +2069,7 @@ function PrometheusApp() {
                   <IconComponent size={18} className="mr-2" />
                   {category.name}
                   <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
-                    {category.id === 'all' ? allProducts.length : (products[category.id]?.length || 0)}
+                    {category.id === 'all' ? allProducts.length : ((products as any)[category.id]?.length || 0)}
                   </span>
                 </motion.button>
               );
@@ -2168,7 +2168,7 @@ function PrometheusApp() {
           {/* Features */}
           <div className="mb-4">
             <div className="flex flex-wrap gap-1">
-              {product.features.slice(0, 3).map((feature, index) => (
+              {product.features.slice(0, 3).map((feature: string, index: number) => (
                 <span
                   key={index}
                   className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full"
@@ -2309,7 +2309,7 @@ function PrometheusApp() {
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-3">Key Features</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {product.features.map((feature, index) => (
+                  {product.features.map((feature: string, index: number) => (
                     <div key={index} className="flex items-center">
                       <CheckCircle className="text-green-500 mr-2" size={16} />
                       <span className="text-sm text-gray-700">{feature}</span>
@@ -2322,7 +2322,7 @@ function PrometheusApp() {
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-3">Performance Stats</h3>
                 <div className="grid grid-cols-3 gap-4">
-                  {Object.entries(product.stats).map(([key, value]) => (
+                  {Object.entries(product.stats).map(([key, value]: [string, string]) => (
                     <div key={key} className="text-center">
                       <div className="text-lg font-bold text-blue-600">{value}</div>
                       <div className="text-xs text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
@@ -2529,7 +2529,7 @@ function PrometheusApp() {
         {/* Products Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           <AnimatePresence>
-            {displayProducts.map(product => (
+            {displayProducts.map((product: any) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </AnimatePresence>
