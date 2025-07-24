@@ -1,45 +1,36 @@
-import { useState } from 'react';
+import React, { memo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Star, Play, ShoppingCart } from 'lucide-react';
-import ReactPlayer from 'react-player';
+import { Star, Heart, ShoppingCart, Eye } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../contexts/CartContext';
 
 interface ProductCardProps {
   product: Product;
-  isHovered?: boolean;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
   onQuickView?: (product: Product) => void;
+  onAddToCart?: () => void;
 }
 
-const ProductCard = ({ 
-  product, 
-  isHovered: externalIsHovered,
-  onMouseEnter,
-  onMouseLeave,
-  onQuickView 
-}: ProductCardProps) => {
+/**
+ * ProductCard - Molecule component for product display
+ * Implements memoization for zero re-renders and trust-building design
+ * Follows minimalism principles for intelligence signaling (Nahai 2012)
+ */
+const ProductCard = memo(({ product, onQuickView, onAddToCart }: ProductCardProps) => {
   const { addItem } = useCart();
-  const [internalHovered, setInternalHovered] = useState(false);
-  
-  // Use external hover state if provided, otherwise use internal
-  const isHovered = externalIsHovered !== undefined ? externalIsHovered : internalHovered;
+  const [imageError, setImageError] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
 
-  const handleMouseEnter = () => {
-    if (onMouseEnter) {
-      onMouseEnter();
-    } else {
-      setInternalHovered(true);
-    }
+  // Handle image loading errors with fallback
+  const handleImageError = () => {
+    setImageError(true);
   };
 
-  const handleMouseLeave = () => {
-    if (onMouseLeave) {
-      onMouseLeave();
+  const handleAddToCart = () => {
+    if (onAddToCart) {
+      onAddToCart();
     } else {
-      setInternalHovered(false);
+      addItem(product);
     }
   };
 
@@ -51,141 +42,119 @@ const ProductCard = ({
 
   return (
     <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.3 }}
-      className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -2 }}
+      className="bg-surface border border-gray-200 rounded-xl p-6 group hover:shadow-lg transition-all duration-200 hover:border-primary-200"
     >
-      {/* Product Image with Video Player */}
-      <div className="relative h-48 overflow-hidden">
-        {product.videoUrl && isHovered ? (
-          <ReactPlayer
-            url={product.videoUrl}
-            width="100%"
-            height="100%"
-            playing={true}
-            muted={true}
-            loop={true}
-            controls={false}
-            config={{
-              youtube: {
-                playerVars: {
-                  origin: typeof window !== 'undefined' ? window.location.origin : 'https://store.prometheusautomation.com'
-                }
-              }
-            }}
+      {/* Product Image with error handling */}
+      <div className="relative mb-4 overflow-hidden rounded-lg bg-gray-100">
+        {!imageError ? (
+          <img
+            src={product.image}
+            alt={product.name}
+            onError={handleImageError}
+            className="w-full h-48 object-cover group-hover:scale-102 transition-transform duration-200"
+            loading="lazy"
           />
         ) : (
-          <Link to={`/product/${product.id}`}>
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
-              onError={(e) => {
-                e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiNmM2Y0ZjYiLz48dGV4dCB4PSIyMDAiIHk9IjIwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiBmaWxsPSIjOWNhM2FmIj5JbWFnZSBOb3QgRm91bmQ8L3RleHQ+PC9zdmc+';
-              }}
-            />
-          </Link>
-        )}
-        
-        {/* Badge */}
-        {product.badge && (
-          <div className={`absolute top-3 left-3 ${product.badgeColor} text-white px-2 py-1 rounded-full text-xs font-semibold`}>
-            {product.badge}
+          // Fallback for broken images - gray placeholder
+          <div className="w-full h-48 flex items-center justify-center bg-gray-100">
+            <div className="text-center">
+              <div className="w-12 h-12 mx-auto mb-2 bg-gray-200 rounded-lg flex items-center justify-center">
+                <Eye className="w-6 h-6 text-gray-400" />
+              </div>
+              <span className="text-sm text-gray-500">Preview</span>
+            </div>
           </div>
         )}
         
-        {/* Quick View Button */}
-        {onQuickView && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.8 }}
-            onClick={handleQuickView}
-            className="absolute top-3 right-3 bg-white/90 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-colors"
+        {/* Hover actions - minimal and elegant */}
+        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <button
+            onClick={() => setIsLiked(!isLiked)}
+            className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors"
           >
-            <ArrowRight size={16} />
-          </motion.button>
-        )}
+            <Heart className={`w-4 h-4 ${isLiked ? 'text-red-500 fill-current' : 'text-gray-600'}`} />
+          </button>
+        </div>
       </div>
 
-      {/* Product Info */}
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <Link 
-              to={`/product/${product.id}`}
-              className="font-bold text-lg text-gray-900 mb-1 hover:text-blue-600 transition-colors block"
-            >
-              {product.name}
-            </Link>
-            <p className="text-sm text-gray-600">{product.tagline}</p>
-          </div>
+      {/* Product Info - Clean typography for trust */}
+      <div className="space-y-3">
+        <div>
+          <Link 
+            to={`/product/${product.id}`}
+            className="font-semibold text-navy-900 text-lg leading-tight mb-1 hover:text-primary-500 transition-colors block"
+          >
+            {product.name}
+          </Link>
+          <p className="text-gray-600 text-sm line-clamp-2">{product.tagline}</p>
+        </div>
+        
+        {/* Rating - Trust signal */}
+        <div className="flex items-center space-x-2">
           <div className="flex items-center">
-            <Star className="text-yellow-400 fill-current" size={16} />
-            <span className="ml-1 text-sm font-semibold">{product.rating}</span>
-            <span className="ml-1 text-xs text-gray-500">({product.reviews.toLocaleString()})</span>
-          </div>
-        </div>
-
-        {/* Features */}
-        <div className="mb-4">
-          <div className="flex flex-wrap gap-1">
-            {product.features.slice(0, 3).map((feature: string, index: number) => (
-              <span
-                key={index}
-                className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full"
-              >
-                {feature}
-              </span>
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={`w-4 h-4 ${
+                  i < Math.floor(product.rating)
+                    ? 'text-yellow-400 fill-current'
+                    : 'text-gray-200'
+                }`}
+              />
             ))}
-            {product.features.length > 3 && (
-              <span className="text-xs text-gray-500 px-2 py-1">
-                +{product.features.length - 3} more
-              </span>
-            )}
           </div>
+          <span className="text-gray-500 text-sm">({product.reviews})</span>
         </div>
 
-        {/* Pricing */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-baseline">
-            {product.originalPrice && (
-              <span className="text-sm text-gray-400 line-through mr-2">
+        {/* Features - Maximum 3 for cognitive load reduction */}
+        <ul className="space-y-1">
+          {product.features.slice(0, 3).map((feature, index) => (
+            <li key={index} className="flex items-center space-x-2 text-sm text-gray-600">
+              <div className="w-1.5 h-1.5 bg-primary-500 rounded-full flex-shrink-0" />
+              <span className="truncate">{feature}</span>
+            </li>
+          ))}
+        </ul>
+
+        {/* Price and CTA - Clear hierarchy */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+          <div className="flex items-baseline space-x-2">
+            <span className="text-2xl font-bold text-navy-900">${product.price}</span>
+            {product.originalPrice && product.originalPrice > product.price && (
+              <span className="text-gray-400 line-through text-sm">
                 ${product.originalPrice}
               </span>
             )}
-            <span className="text-2xl font-bold text-gray-900">
-              ${product.price}
-            </span>
-            <span className="text-sm text-gray-600 ml-1">{product.unit}</span>
           </div>
           
-          <div className="flex space-x-2">
-            <Link
-              to={`/product/${product.id}`}
-              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors"
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleQuickView}
+              className="p-2 text-gray-600 hover:text-primary-500 transition-colors"
+              title="Quick view"
             >
-              <Play size={14} className="mr-1" />
-              View Details
-            </Link>
+              <Eye className="w-4 h-4" />
+            </button>
+            
             <motion.button
-              onClick={() => addItem(product)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-semibold flex items-center transition-colors"
+              onClick={handleAddToCart}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             >
-              <ShoppingCart size={14} className="mr-1" />
-              Add to Cart
+              <ShoppingCart className="w-4 h-4" />
+              <span>Add</span>
             </motion.button>
           </div>
         </div>
       </div>
     </motion.div>
   );
-};
+});
+
+ProductCard.displayName = 'ProductCard';
 
 export default ProductCard;
