@@ -11,7 +11,6 @@ import AppRouter from './router/AppRouter';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import Layout from './components/layout/Layout';
-import LiveActivity from './components/LiveActivity';
 import './styles/globals.css';
 
 // Create React Query client for TikTok-style infinite scroll
@@ -45,8 +44,6 @@ function App() {
                       <AppRouter />
                     </Suspense>
                     
-                    {/* Live activity feed for social proof (Cialdini) */}
-                    <LiveActivity />
                   </Layout>
                   
                   {/* Enhanced toast notifications with navy trust colors */}

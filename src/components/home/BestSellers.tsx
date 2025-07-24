@@ -24,7 +24,7 @@ const BestSellers = memo(() => {
         {/* Section Header - Clean and minimal */}
         <div className="flex items-center justify-between mb-12">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-navy rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
               <Award className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -75,19 +75,19 @@ const BestSellers = memo(() => {
             >
               {/* Minimal bestseller indicator */}
               <div className="absolute -top-2 -right-2 z-20">
-                <div className="bg-navy text-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
+                <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
                   #{index + 1}
                 </div>
               </div>
 
               {/* Clean Product Card */}
-              <div className="bg-white rounded-xl border border-gray-200 hover:border-primary hover:shadow-lg transition-all">
+              <div className="bg-white rounded-xl border border-gray-200 hover:border-purple-200 hover:shadow-lg transition-all">
                 <ProductCard product={product} />
               </div>
 
               {/* Subtle sales indicator */}
               <div className="mt-3 text-center text-sm text-gray-600">
-                <span className="font-medium text-navy">{product.reviews}</span> verified reviews
+                <span className="font-medium bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">{product.reviews}</span> verified reviews
               </div>
             </motion.div>
           ))}
