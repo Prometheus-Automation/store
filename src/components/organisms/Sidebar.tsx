@@ -168,34 +168,47 @@ const Sidebar = memo(({ isOpen, onClose, filters, onFiltersChange, productCount 
             
             {/* Search */}
             <div>
-              <label className="block text-sm font-medium text-navy mb-3">
-                Search Products
+              <label className="block text-sm font-medium bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-3">
+                Search AI models, agents...
               </label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-500" />
                 <input
                   type="text"
                   placeholder="Search AI models, agents..."
                   value={filters.searchQuery}
                   onChange={(e) => onFiltersChange({ ...filters, searchQuery: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
             </div>
 
             {/* Categories */}
             <div>
-              <h3 className="text-sm font-medium text-navy-900 mb-3">Category</h3>
+              <h3 className="text-sm font-medium bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-3">Category</h3>
               <div className="space-y-2">
                 {filterOptions.categories.map((category) => (
-                  <label key={category.id} className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      name="category"
-                      checked={filters.category === category.id}
-                      onChange={() => handleCategoryChange(category.id)}
-                      className="w-4 h-4 text-primary-500 border-gray-300 focus:ring-primary-500"
-                    />
+                  <label key={category.id} className="flex items-center cursor-pointer group">
+                    <div className="relative">
+                      <input
+                        type="radio"
+                        name="category"
+                        checked={filters.category === category.id}
+                        onChange={() => handleCategoryChange(category.id)}
+                        className="sr-only"
+                      />
+                      <div className={`w-4 h-4 rounded-full border-2 transition-all ${
+                        filters.category === category.id
+                          ? 'bg-gradient-to-r from-purple-600 to-blue-600 border-purple-600'
+                          : 'border-gray-300 group-hover:border-purple-400'
+                      }`}>
+                        {filters.category === category.id && (
+                          <svg className="w-2 h-2 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </div>
+                    </div>
                     <span className="ml-3 text-gray-700 flex-1">{category.name}</span>
                     <span className="text-xs text-gray-500">({category.count})</span>
                   </label>
@@ -205,17 +218,30 @@ const Sidebar = memo(({ isOpen, onClose, filters, onFiltersChange, productCount 
 
             {/* Price Range */}
             <div>
-              <h3 className="text-sm font-medium text-navy-900 mb-3">Price Range</h3>
+              <h3 className="text-sm font-medium bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-3">Price Range</h3>
               <div className="space-y-2">
                 {filterOptions.priceRanges.map((range, index) => (
-                  <label key={index} className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      name="priceRange"
-                      checked={filters.priceRange[0] === range.min && filters.priceRange[1] === range.max}
-                      onChange={() => handlePriceRangeChange(range.min, range.max)}
-                      className="w-4 h-4 text-primary-500 border-gray-300 focus:ring-primary-500"
-                    />
+                  <label key={index} className="flex items-center cursor-pointer group">
+                    <div className="relative">
+                      <input
+                        type="radio"
+                        name="priceRange"
+                        checked={filters.priceRange[0] === range.min && filters.priceRange[1] === range.max}
+                        onChange={() => handlePriceRangeChange(range.min, range.max)}
+                        className="sr-only"
+                      />
+                      <div className={`w-4 h-4 rounded-full border-2 transition-all ${
+                        filters.priceRange[0] === range.min && filters.priceRange[1] === range.max
+                          ? 'bg-gradient-to-r from-purple-600 to-blue-600 border-purple-600'
+                          : 'border-gray-300 group-hover:border-purple-400'
+                      }`}>
+                        {filters.priceRange[0] === range.min && filters.priceRange[1] === range.max && (
+                          <svg className="w-2 h-2 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </div>
+                    </div>
                     <span className="ml-3 text-gray-700">{range.label}</span>
                   </label>
                 ))}
@@ -224,17 +250,30 @@ const Sidebar = memo(({ isOpen, onClose, filters, onFiltersChange, productCount 
 
             {/* Rating */}
             <div>
-              <h3 className="text-sm font-medium text-navy-900 mb-3">Minimum Rating</h3>
+              <h3 className="text-sm font-medium bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-3">Minimum Rating</h3>
               <div className="space-y-2">
                 {filterOptions.ratings.map((rating) => (
-                  <label key={rating} className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      name="rating"
-                      checked={filters.rating === rating}
-                      onChange={() => handleRatingChange(rating)}
-                      className="w-4 h-4 text-primary-500 border-gray-300 focus:ring-primary-500"
-                    />
+                  <label key={rating} className="flex items-center cursor-pointer group">
+                    <div className="relative">
+                      <input
+                        type="radio"
+                        name="rating"
+                        checked={filters.rating === rating}
+                        onChange={() => handleRatingChange(rating)}
+                        className="sr-only"
+                      />
+                      <div className={`w-4 h-4 rounded-full border-2 transition-all ${
+                        filters.rating === rating
+                          ? 'bg-gradient-to-r from-purple-600 to-blue-600 border-purple-600'
+                          : 'border-gray-300 group-hover:border-purple-400'
+                      }`}>
+                        {filters.rating === rating && (
+                          <svg className="w-2 h-2 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </div>
+                    </div>
                     <span className="ml-3 flex items-center">
                       {[...Array(rating)].map((_, i) => (
                         <svg
@@ -245,7 +284,7 @@ const Sidebar = memo(({ isOpen, onClose, filters, onFiltersChange, productCount 
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
                       ))}
-                      <span className="ml-1 text-gray-700">& up</span>
+                      <span className="ml-1 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent font-medium">& up</span>
                     </span>
                   </label>
                 ))}
@@ -255,7 +294,7 @@ const Sidebar = memo(({ isOpen, onClose, filters, onFiltersChange, productCount 
             {/* Clear filters */}
             <button
               onClick={clearFilters}
-              className="w-full py-2 text-primary-500 hover:text-primary-600 font-medium transition-colors"
+              className="w-full py-2 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent hover:from-purple-700 hover:to-blue-700 font-medium transition-all"
             >
               Clear All Filters
             </button>

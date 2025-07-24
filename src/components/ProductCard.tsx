@@ -116,7 +116,7 @@ const ProductCard = memo(({ product, onQuickView, onAddToCart }: ProductCardProp
         {/* Price and CTA - Clear hierarchy with AI gradient styling */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <div className="flex items-baseline space-x-2">
-            <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">${product.price}</span>
+            <span className="text-2xl font-bold text-blue-600">${product.price}</span>
             {product.originalPrice && product.originalPrice > product.price && (
               <span className="text-gray-500 line-through text-sm font-medium">
                 ${product.originalPrice}

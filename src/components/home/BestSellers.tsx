@@ -87,7 +87,7 @@ const BestSellers = memo(() => {
 
               {/* Subtle sales indicator */}
               <div className="mt-3 text-center text-sm text-gray-600">
-                <span className="font-medium bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">{product.reviews}</span> verified reviews
+                <span className="font-medium text-blue-600">{product.reviews}</span> verified reviews
               </div>
             </motion.div>
           ))}

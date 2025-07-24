@@ -169,8 +169,8 @@ const HomePage = memo(() => {
                   onClick={() => setFilters(prev => ({ ...prev, category: category.id }))}
                   className={`flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all shadow-sm ${
                     filters.category === category.id
-                      ? 'bg-primary text-white shadow-md transform scale-105'
-                      : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-primary hover:text-primary hover:shadow-md'
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md transform scale-105'
+                      : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-purple-200 hover:text-purple-600 hover:shadow-md'
                   }`}
                 >
                   <category.icon className="w-5 h-5" />
