@@ -19,15 +19,15 @@ export default defineConfig({
         theme_color: '#00bfff',
         background_color: '#ffffff',
         display: 'standalone',
-        start_url: '/',
+        start_url: '/store/',
         icons: [
           {
-            src: '/icon-192.png',
+            src: '/store/icon-192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/icon-512.png',
+            src: '/store/icon-512.png',
             sizes: '512x512',
             type: 'image/png'
           }

@@ -16,12 +16,12 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 
 const SEO = ({ title, description, keywords, image, url }) => {
   const siteTitle = "Prometheus Automation - AI Marketplace";
   const siteDescription = "Discover AI models, agents, and automations. ChatGPT, Claude, n8n, Zapier and more. Build your AI-powered future.";
-  const siteUrl = import.meta.env.VITE_APP_URL || "https://prometheus-automation.com";
+  const siteUrl = import.meta.env.VITE_APP_URL || "https://www.prometheusautomation.com";
   
   const pageTitle = title ? `${title} | ${siteTitle}` : siteTitle;
   const pageDescription = description || siteDescription;
-  const pageUrl = url ? `${siteUrl}${url}` : siteUrl;
-  const pageImage = image || `${siteUrl}/og-image.png`;
+  const pageUrl = url ? `${siteUrl}/store${url}` : `${siteUrl}/store/`;
+  const pageImage = image || `${siteUrl}/store/og-image.png`;
 
   return (
     <Helmet>
