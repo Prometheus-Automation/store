@@ -2,9 +2,17 @@ import { loadStripe } from '@stripe/stripe-js';
 import type { CartItem } from '@/types';
 
 // This would be your publishable key from Stripe
-const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_your_key_here';
+const getStripeKey = () => {
+  const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+  if (!key) {
+    console.error('VITE_STRIPE_PUBLISHABLE_KEY is not set. Stripe functionality will be disabled.');
+    return null;
+  }
+  return key;
+};
 
-export const stripePromise = loadStripe(stripePublishableKey);
+const stripeKey = getStripeKey();
+export const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 // Mock checkout session creation (in production, this would call your backend)
 export const createCheckoutSession = async (items: CartItem[]) => {

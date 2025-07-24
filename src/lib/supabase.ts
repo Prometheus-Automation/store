@@ -2,10 +2,22 @@ import { createClient } from '@supabase/supabase-js'
 import type { Product, User, Order, Review, SellerProfile, CommunityPost } from '@/types'
 
 // These would be environment variables in production
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key'
+const getSupabaseConfig = () => {
+  const url = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  
+  if (!url || !anonKey) {
+    console.error('Supabase configuration missing. Database functionality will be disabled.');
+    return null;
+  }
+  
+  return { url, anonKey };
+};
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const supabaseConfig = getSupabaseConfig();
+export const supabase = supabaseConfig 
+  ? createClient(supabaseConfig.url, supabaseConfig.anonKey)
+  : null;
 
 // Database schema (run these in Supabase SQL editor):
 /*

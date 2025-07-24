@@ -4,8 +4,17 @@ import { CreditCard, X } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import CheckoutForm from './CheckoutForm';
 
-// Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_demo_key');
+// Initialize Stripe with proper error handling
+const getStripeKey = () => {
+  const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+  if (!key) {
+    console.error('VITE_STRIPE_PUBLISHABLE_KEY is not set');
+    return null;
+  }
+  return key;
+};
+
+const stripePromise = getStripeKey() ? loadStripe(getStripeKey()!) : null;
 
 interface CheckoutModalProps {
   isOpen: boolean;
