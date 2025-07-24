@@ -2440,7 +2440,7 @@ function PrometheusApp() {
                           <div className="text-lg font-bold">${product.price}{product.unit}</div>
                           <motion.button
                             onClick={() => {
-                              addItem(product as Product);
+                              addItem(product as any);
                               setShowQuiz(false);
                             }}
                             className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
