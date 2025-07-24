@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
 export default defineConfig({
-  base: '/store/',
+  base: '/', // Change to root for subdomain
   plugins: [
     react(),
     VitePWA({
@@ -19,17 +19,17 @@ export default defineConfig({
         theme_color: '#00bfff',
         background_color: '#ffffff',
         display: 'standalone',
-        scope: '/store/',
-        start_url: '/store/',
+        scope: '/',
+        start_url: '/',
         icons: [
           {
-            src: 'https://www.prometheusautomation.com/store/icon-192.png',
+            src: '/icon-192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: 'https://www.prometheusautomation.com/store/icon-512.png',
+            src: '/icon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'

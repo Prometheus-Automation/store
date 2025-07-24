@@ -18,7 +18,7 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 
 const SEO = ({ title, description, keywords, image, url }: SEOProps) => {
   const siteTitle = "Prometheus Automation - AI Marketplace";
   const siteDescription = "Discover AI models, agents, and automations. ChatGPT, Claude, n8n, Zapier and more. Build your AI-powered future.";
-  const siteUrl = import.meta.env.VITE_APP_URL || "https://prometheus-automation.com";
+  const siteUrl = import.meta.env.VITE_APP_URL || "https://store.prometheusautomation.com";
   
   const pageTitle = title ? `${title} | ${siteTitle}` : siteTitle;
   const pageDescription = description || siteDescription;
