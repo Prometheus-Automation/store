@@ -102,19 +102,19 @@ const ProductCard = memo(({ product, onQuickView, onAddToCart }: ProductCardProp
         {/* Features - Maximum 3 for cognitive load reduction */}
         <ul className="space-y-1">
           {product.features.slice(0, 3).map((feature, index) => (
-            <li key={index} className="flex items-center space-x-2 text-sm text-gray-600">
-              <div className="w-1.5 h-1.5 bg-primary-500 rounded-full flex-shrink-0" />
+            <li key={index} className="flex items-center space-x-2 text-sm text-gray-700">
+              <div className="w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />
               <span className="truncate">{feature}</span>
             </li>
           ))}
         </ul>
 
-        {/* Price and CTA - Clear hierarchy */}
+        {/* Price and CTA - Clear hierarchy with proper contrast */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <div className="flex items-baseline space-x-2">
-            <span className="text-2xl font-bold text-navy-900">${product.price}</span>
+            <span className="text-2xl font-bold text-navy">${product.price}</span>
             {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-gray-400 line-through text-sm">
+              <span className="text-gray-500 line-through text-sm font-medium">
                 ${product.originalPrice}
               </span>
             )}
@@ -123,7 +123,7 @@ const ProductCard = memo(({ product, onQuickView, onAddToCart }: ProductCardProp
           <div className="flex items-center space-x-2">
             <button
               onClick={handleQuickView}
-              className="p-2 text-gray-600 hover:text-primary-500 transition-colors"
+              className="p-2 text-gray-600 hover:text-primary transition-colors hover:bg-blue-50 rounded-lg"
               title="Quick view"
             >
               <Eye className="w-4 h-4" />
@@ -133,10 +133,10 @@ const ProductCard = memo(({ product, onQuickView, onAddToCart }: ProductCardProp
               onClick={handleAddToCart}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              className="bg-primary hover:bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold transition-all flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 shadow-sm hover:shadow-md"
             >
               <ShoppingCart className="w-4 h-4" />
-              <span>Add</span>
+              <span>Add to Cart</span>
             </motion.button>
           </div>
         </div>

@@ -9,6 +9,9 @@ import ProductCard from '../components/ProductCard';
 import QuickViewModal from '../components/QuickViewModal';
 import Sidebar from '../components/organisms/Sidebar';
 import Hero from '../components/organisms/Hero';
+import BestSellers from '../components/home/BestSellers';
+import FlashDeals from '../components/home/FlashDeals';
+import ActivityTicker from '../components/common/ActivityTicker';
 import SEO from '../components/SEO';
 import { allProducts } from '../data/products';
 import type { Product, FilterState } from '../types';
@@ -109,6 +112,15 @@ const HomePage = memo(() => {
       {/* Hero Section */}
       <Hero />
       
+      {/* Live Activity Ticker - Social Proof */}
+      <ActivityTicker />
+      
+      {/* Flash Deals - Urgency and FOMO */}
+      <FlashDeals />
+      
+      {/* Best Sellers - Social Proof and Trust */}
+      <BestSellers />
+      
       {/* Main Content - Amazon-style layout */}
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex gap-8">
@@ -129,9 +141,9 @@ const HomePage = memo(() => {
           <div className="lg:hidden mb-6">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-surface border border-gray-200 rounded-lg"
+              className="flex items-center space-x-2 px-4 py-3 bg-white border-2 border-gray-200 rounded-lg font-medium text-gray-700 hover:border-primary hover:text-primary transition-all"
             >
-              <Filter className="w-4 h-4" />
+              <Filter className="w-5 h-5" />
               <span>Filters</span>
             </button>
           </div>
@@ -149,28 +161,28 @@ const HomePage = memo(() => {
 
           {/* Products Grid */}
           <div className="flex-1">
-            {/* Category tabs - Minimalist design */}
-            <div className="flex flex-wrap gap-2 mb-8">
+            {/* Category tabs - Fixed visibility with proper contrast */}
+            <div className="flex flex-wrap gap-3 mb-8">
               {categories.map((category) => (
                 <button
                   key={category.id}
                   onClick={() => setFilters(prev => ({ ...prev, category: category.id }))}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all shadow-sm ${
                     filters.category === category.id
-                      ? 'bg-primary-500 text-white'
-                      : 'bg-surface border border-gray-200 text-gray-700 hover:bg-gray-50'
+                      ? 'bg-primary text-white shadow-md transform scale-105'
+                      : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-primary hover:text-primary hover:shadow-md'
                   }`}
                 >
-                  <category.icon className="w-4 h-4" />
+                  <category.icon className="w-5 h-5" />
                   <span>{category.name}</span>
                 </button>
               ))}
             </div>
 
-            {/* Results count */}
+            {/* Results count with better visibility */}
             <div className="mb-6">
-              <p className="text-gray-600">
-                {filteredProducts.length} {filteredProducts.length === 1 ? 'result' : 'results'}
+              <p className="text-gray-700 font-medium text-lg">
+                {filteredProducts.length} {filteredProducts.length === 1 ? 'result' : 'results'} found
               </p>
             </div>
 
