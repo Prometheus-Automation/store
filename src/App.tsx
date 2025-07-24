@@ -1138,7 +1138,7 @@ function PrometheusApp() {
         tagline: 'The Creative Genius 🎨',
         provider: 'OpenAI',
         price: 20,
-          unit: '/month',
+        unit: '/month',
         image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJiZyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzAwYmZmZjtzdG9wLW9wYWNpdHk6MSIgLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMwMDgwZmY7c3RvcC1vcGFjaXR5OjEiIC8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjYmcpIi8+PHRleHQgeD0iMjAwIiB5PSIyMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI0OCIgZmlsbD0id2hpdGUiPkFJPC90ZXh0Pjwvc3ZnPg==',
         badge: 'Most Popular 🔥',
         badgeColor: 'bg-blue-500',
@@ -2321,7 +2321,7 @@ function PrometheusApp() {
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-3">Performance Stats</h3>
                 <div className="grid grid-cols-3 gap-4">
-                  {Object.entries(product.stats).map(([key, value]: [string, string]) => (
+                  {Object.entries(product.stats).map(([key, value]) => (
                     <div key={key} className="text-center">
                       <div className="text-lg font-bold text-blue-600">{value}</div>
                       <div className="text-xs text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
@@ -2425,7 +2425,7 @@ function PrometheusApp() {
 
               {recommendations.length > 0 ? (
                 <div className="space-y-4">
-                  {recommendations.map((product: any) => (
+                  {recommendations.map((product) => (
                     <div key={product.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex items-center justify-between">
                         <div>
@@ -2440,7 +2440,7 @@ function PrometheusApp() {
                           <div className="text-lg font-bold">${product.price}{product.unit}</div>
                           <motion.button
                             onClick={() => {
-                              addItem(product as any);
+                              addItem(product);
                               setShowQuiz(false);
                             }}
                             className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
@@ -2528,7 +2528,7 @@ function PrometheusApp() {
         {/* Products Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           <AnimatePresence>
-            {displayProducts.map((product: any) => (
+            {displayProducts.map((product: Product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </AnimatePresence>
