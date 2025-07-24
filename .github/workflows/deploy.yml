@@ -32,6 +32,12 @@ jobs:
         
       - name: Build
         run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://demo.supabase.co
+          VITE_SUPABASE_ANON_KEY: demo_key
+          VITE_STRIPE_PUBLISHABLE_KEY: pk_test_demo_key
+          VITE_APP_URL: https://www.prometheusautomation.com/store
+          VITE_APP_NAME: Prometheus Automation
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
