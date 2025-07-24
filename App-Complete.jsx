@@ -1,79 +1,9 @@
 import React, { useState, useEffect, createContext, useContext, useRef } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ShoppingCart, Sparkles, Bot, Zap, Brain, Activity, Star, Heart, Play, ChevronDown, Filter, ArrowRight, Cpu, Layers, Code, Shield, Clock, CheckCircle, TrendingUp, Users, BarChart, X, Menu, ChevronRight, Rocket, DollarSign, Award, CreditCard, Lock } from 'lucide-react';
+import { Search, ShoppingCart, Sparkles, Bot, Zap, Brain, Activity, Star, Heart, Play, ChevronDown, Filter, ArrowRight, Cpu, Layers, Code, Shield, Clock, CheckCircle, TrendingUp, Users, BarChart, X, Menu, ChevronRight, Rocket, DollarSign, Award } from 'lucide-react';
 import ReactPlayer from 'react-player';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import Fuse from 'fuse.js';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { HelmetProvider, Helmet } from 'react-helmet-async';
-
-// Initialize Stripe  
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_demo_key');
-
-// SEO Component
-const SEO = ({ title, description, keywords, image, url }) => {
-  const siteTitle = "Prometheus Automation - AI Marketplace";
-  const siteDescription = "Discover AI models, agents, and automations. ChatGPT, Claude, n8n, Zapier and more. Build your AI-powered future.";
-  const siteUrl = import.meta.env.VITE_APP_URL || "https://prometheus-automation.com";
-  
-  const pageTitle = title ? `${title} | ${siteTitle}` : siteTitle;
-  const pageDescription = description || siteDescription;
-  const pageUrl = url ? `${siteUrl}${url}` : siteUrl;
-  const pageImage = image || `${siteUrl}/og-image.png`;
-
-  return (
-    <Helmet>
-      {/* Basic Meta Tags */}
-      <title>{pageTitle}</title>
-      <meta name="description" content={pageDescription} />
-      <meta name="keywords" content={keywords || "AI, automation, ChatGPT, Claude, n8n, Zapier, AI models, AI agents, machine learning"} />
-      <link rel="canonical" href={pageUrl} />
-
-      {/* Open Graph Tags */}
-      <meta property="og:title" content={pageTitle} />
-      <meta property="og:description" content={pageDescription} />
-      <meta property="og:image" content={pageImage} />
-      <meta property="og:url" content={pageUrl} />
-      <meta property="og:type" content="website" />
-      <meta property="og:site_name" content={siteTitle} />
-
-      {/* Twitter Card Tags */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={pageTitle} />
-      <meta name="twitter:description" content={pageDescription} />
-      <meta name="twitter:image" content={pageImage} />
-
-      {/* Additional SEO Tags */}
-      <meta name="robots" content="index, follow" />
-      <meta name="author" content="Prometheus Automation" />
-      <meta name="theme-color" content="#00bfff" />
-      <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-      <meta name="apple-mobile-web-app-title" content="Prometheus" />
-
-      {/* Structured Data */}
-      <script type="application/ld+json">
-        {JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          "name": siteTitle,
-          "description": siteDescription,
-          "url": siteUrl,
-          "potentialAction": {
-            "@type": "SearchAction",
-            "target": {
-              "@type": "EntryPoint",
-              "urlTemplate": `${siteUrl}/?search={search_term_string}`
-            },
-            "query-input": "required name=search_term_string"
-          }
-        })}
-      </script>
-    </Helmet>
-  );
-};
 
 // Enhanced Cart Context with Rocket Animation
 const CartContext = createContext();
@@ -84,7 +14,6 @@ function CartProvider({ children }) {
     return saved ? JSON.parse(saved) : [];
   });
   const [rocketAnimations, setRocketAnimations] = useState([]);
-  const [showCheckout, setShowCheckout] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(items));
@@ -121,46 +50,10 @@ function CartProvider({ children }) {
     });
   };
 
-  const removeItem = (productId) => {
-    setItems(current => current.filter(item => item.product.id !== productId));
-    toast.success('Item removed from cart');
-  };
-
-  const updateQuantity = (productId, quantity) => {
-    if (quantity <= 0) {
-      removeItem(productId);
-      return;
-    }
-    setItems(current => 
-      current.map(item => 
-        item.product.id === productId 
-          ? { ...item, quantity }
-          : item
-      )
-    );
-  };
-
-  const clearCart = () => {
-    setItems([]);
-    toast.success('Cart cleared');
-  };
-
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
 
   return (
-    <CartContext.Provider value={{ 
-      items, 
-      addItem, 
-      removeItem, 
-      updateQuantity, 
-      clearCart,
-      totalItems, 
-      totalPrice,
-      rocketAnimations,
-      showCheckout,
-      setShowCheckout
-    }}>
+    <CartContext.Provider value={{ items, addItem, totalItems, rocketAnimations }}>
       {children}
     </CartContext.Provider>
   );
@@ -171,178 +64,6 @@ function useCart() {
   if (!context) throw new Error('useCart must be used within CartProvider');
   return context;
 }
-
-// Stripe Payment Form Component
-const CheckoutForm = ({ onSuccess, onCancel }) => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState(null);
-  const { items, totalPrice, clearCart } = useCart();
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!stripe || !elements) {
-      return;
-    }
-
-    setProcessing(true);
-    setError(null);
-
-    const card = elements.getElement(CardElement);
-
-    // Create payment method
-    const { error: paymentError, paymentMethod } = await stripe.createPaymentMethod({
-      type: 'card',
-      card: card,
-      billing_details: {
-        name: 'Customer', // In a real app, get this from a form
-      },
-    });
-
-    if (paymentError) {
-      setError(paymentError.message);
-      setProcessing(false);
-      return;
-    }
-
-    // Simulate payment processing (in a real app, you'd send to your backend)
-    setTimeout(() => {
-      toast.success('Payment successful! 🎉');
-      clearCart();
-      onSuccess();
-      setProcessing(false);
-    }, 2000);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-gray-50 rounded-lg p-4">
-        <h3 className="font-semibold text-gray-900 mb-3">Order Summary</h3>
-        <div className="space-y-2">
-          {items.map((item) => (
-            <div key={item.product.id} className="flex justify-between text-sm">
-              <span>{item.product.name} × {item.quantity}</span>
-              <span>${(item.product.price * item.quantity).toFixed(2)}</span>
-            </div>
-          ))}
-          <div className="border-t pt-2 flex justify-between font-semibold">
-            <span>Total</span>
-            <span>${totalPrice.toFixed(2)}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Payment Information
-          </label>
-          <div className="border border-gray-300 rounded-lg p-3 bg-white">
-            <CardElement
-              options={{
-                style: {
-                  base: {
-                    fontSize: '16px',
-                    color: '#424770',
-                    '::placeholder': {
-                      color: '#aab7c4',
-                    },
-                  },
-                },
-              }}
-            />
-          </div>
-        </div>
-
-        {error && (
-          <div className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg p-3">
-            {error}
-          </div>
-        )}
-
-        <div className="flex space-x-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="flex-1 bg-gray-100 text-gray-700 px-4 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={!stripe || processing}
-            className="flex-1 bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-          >
-            {processing ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Processing...
-              </>
-            ) : (
-              <>
-                <Lock className="h-4 w-4 mr-2" />
-                Pay ${totalPrice.toFixed(2)}
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-
-      <div className="text-xs text-gray-500 text-center">
-        <Lock className="h-3 w-3 inline mr-1" />
-        Your payment information is encrypted and secure
-      </div>
-    </form>
-  );
-};
-
-// Checkout Modal Component
-const CheckoutModal = ({ isOpen, onClose }) => {
-  const handleSuccess = () => {
-    onClose();
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-              <CreditCard className="h-6 w-6 mr-2" />
-              Checkout
-            </h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-
-          <Elements stripe={stripePromise}>
-            <CheckoutForm onSuccess={handleSuccess} onCancel={onClose} />
-          </Elements>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-};
 
 // Enhanced Tooltip Component with Outside Click Handling
 const StatsTooltip = ({ children, content, position = "bottom" }) => {
@@ -572,533 +293,6 @@ const FacetedFilters = ({ filters, setFilters, showFilters, setShowFilters }) =>
   );
 };
 
-// Seller Dashboard Component
-function SellerDashboard() {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
-
-  const tabs = [
-    { id: 'overview', name: 'Overview', icon: BarChart },
-    { id: 'products', name: 'My Products', icon: Layers },
-    { id: 'sales', name: 'Sales', icon: DollarSign },
-    { id: 'analytics', name: 'Analytics', icon: Activity },
-  ];
-
-  const mockStats = {
-    totalSales: 12450,
-    activeProducts: 8,
-    monthlyRevenue: 3420,
-    customerRating: 4.8
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <SEO 
-        title="Seller Dashboard"
-        description="Manage your AI products, view sales analytics, and track performance in the Prometheus AI marketplace."
-        keywords="seller dashboard, AI marketplace, product management, sales analytics"
-        url="/seller"
-      />
-      
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => navigate('/')}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
-            >
-              <ArrowRight className="h-5 w-5 rotate-180" />
-              <span>Back to Store</span>
-            </button>
-            <h1 className="text-2xl font-bold text-gray-900">Seller Dashboard</h1>
-            <div className="w-20"></div>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex space-x-8">
-          {/* Sidebar Navigation */}
-          <div className="w-64 space-y-2">
-            {tabs.map((tab) => {
-              const IconComponent = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                    activeTab === tab.id
-                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <IconComponent className="h-5 w-5" />
-                  <span className="font-medium">{tab.name}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Main Content */}
-          <div className="flex-1">
-            {activeTab === 'overview' && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">Total Sales</p>
-                        <p className="text-2xl font-bold text-gray-900">${mockStats.totalSales.toLocaleString()}</p>
-                      </div>
-                      <DollarSign className="h-8 w-8 text-green-500" />
-                    </div>
-                  </div>
-                  <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">Active Products</p>
-                        <p className="text-2xl font-bold text-gray-900">{mockStats.activeProducts}</p>
-                      </div>
-                      <Layers className="h-8 w-8 text-blue-500" />
-                    </div>
-                  </div>
-                  <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">Monthly Revenue</p>
-                        <p className="text-2xl font-bold text-gray-900">${mockStats.monthlyRevenue.toLocaleString()}</p>
-                      </div>
-                      <TrendingUp className="h-8 w-8 text-purple-500" />
-                    </div>
-                  </div>
-                  <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">Customer Rating</p>
-                        <p className="text-2xl font-bold text-gray-900">{mockStats.customerRating}</p>
-                      </div>
-                      <Star className="h-8 w-8 text-yellow-500" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white p-6 rounded-lg shadow-sm border">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                      <CheckCircle className="h-5 w-5 text-green-500" />
-                      <div>
-                        <p className="text-sm font-medium">New sale: ChatGPT Plus</p>
-                        <p className="text-xs text-gray-500">2 hours ago</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                      <Award className="h-5 w-5 text-blue-500" />
-                      <div>
-                        <p className="text-sm font-medium">Product review: 5 stars</p>
-                        <p className="text-xs text-gray-500">4 hours ago</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'products' && (
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">My Products</h3>
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                    Add New Product
-                  </button>
-                </div>
-                <div className="text-center py-12">
-                  <Layers className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">Product Management</h4>
-                  <p className="text-gray-600">Manage your AI models, agents, and automations here.</p>
-                </div>
-              </div>
-            )}
-
-            {(activeTab === 'sales' || activeTab === 'analytics') && (
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">
-                  {activeTab === 'sales' ? 'Sales Analytics' : 'Performance Analytics'}
-                </h3>
-                <div className="text-center py-12">
-                  <BarChart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">Coming Soon</h4>
-                  <p className="text-gray-600">
-                    Detailed {activeTab} analytics will be available here.
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Community Page Component
-function CommunityPage() {
-  const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState('discussions');
-
-  const sections = [
-    { id: 'discussions', name: 'Discussions', icon: Users },
-    { id: 'tutorials', name: 'Tutorials', icon: Code },
-    { id: 'showcase', name: 'Showcase', icon: Award },
-    { id: 'support', name: 'Support', icon: Shield },
-  ];
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <SEO 
-        title="Community"
-        description="Join the Prometheus AI community. Connect with AI automation experts, share knowledge, access tutorials, and get support."
-        keywords="AI community, automation experts, tutorials, support, AI discussions, showcase"
-        url="/community"
-      />
-      
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => navigate('/')}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
-            >
-              <ArrowRight className="h-5 w-5 rotate-180" />
-              <span>Back to Store</span>
-            </button>
-            <h1 className="text-2xl font-bold text-gray-900">Community</h1>
-            <div className="w-20"></div>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex space-x-8">
-          {/* Sidebar Navigation */}
-          <div className="w-64 space-y-2">
-            {sections.map((section) => {
-              const IconComponent = section.icon;
-              return (
-                <button
-                  key={section.id}
-                  onClick={() => setActiveSection(section.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                    activeSection === section.id
-                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <IconComponent className="h-5 w-5" />
-                  <span className="font-medium">{section.name}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Main Content */}
-          <div className="flex-1">
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <div className="text-center py-12">
-                <Users className="h-16 w-16 text-blue-500 mx-auto mb-4" />
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Welcome to the Prometheus Community</h3>
-                <p className="text-gray-600 max-w-2xl mx-auto mb-8">
-                  Connect with AI automation experts, share your creations, learn from tutorials, 
-                  and get support from our growing community of developers and creators.
-                </p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                  <div className="p-6 border border-gray-200 rounded-lg">
-                    <Users className="h-8 w-8 text-blue-500 mb-3" />
-                    <h4 className="font-semibold text-gray-900 mb-2">Join Discussions</h4>
-                    <p className="text-sm text-gray-600">Share ideas, ask questions, and collaborate with fellow AI enthusiasts.</p>
-                  </div>
-                  <div className="p-6 border border-gray-200 rounded-lg">
-                    <Code className="h-8 w-8 text-green-500 mb-3" />
-                    <h4 className="font-semibold text-gray-900 mb-2">Learn & Teach</h4>
-                    <p className="text-sm text-gray-600">Access tutorials, guides, and share your own knowledge.</p>
-                  </div>
-                  <div className="p-6 border border-gray-200 rounded-lg">
-                    <Award className="h-8 w-8 text-purple-500 mb-3" />
-                    <h4 className="font-semibold text-gray-900 mb-2">Showcase Work</h4>
-                    <p className="text-sm text-gray-600">Display your AI automations and get recognition from the community.</p>
-                  </div>
-                  <div className="p-6 border border-gray-200 rounded-lg">
-                    <Shield className="h-8 w-8 text-red-500 mb-3" />
-                    <h4 className="font-semibold text-gray-900 mb-2">Get Support</h4>
-                    <p className="text-sm text-gray-600">Get help with technical issues and implementation challenges.</p>
-                  </div>
-                </div>
-
-                <div className="mt-8">
-                  <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
-                    Join Community (Coming Soon)
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Product Detail Page Component
-function ProductDetailPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { addItem } = useCart();
-  
-  // Get all products
-  const allProducts = [
-    // Models
-    {
-      id: 1,
-      name: 'ChatGPT Plus',
-      tagline: 'The Creative Genius 🎨',
-      provider: 'OpenAI',
-      price: 20,
-      originalPrice: null,
-      unit: '/month',
-      image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=400&fit=crop',
-      badge: 'Most Popular 🔥',
-      badgeColor: 'bg-blue-500',
-      rating: 4.8,
-      reviews: 15420,
-      features: ['GPT-4 Access', 'DALL-E 3', 'Advanced Analytics', 'Code Interpreter', 'Custom GPTs'],
-      stats: { users: '100M+', satisfaction: '98%', responseTime: '1.2s' },
-      category: 'Language Model',
-      description: 'Perfect for creative writing, coding help, and general assistance',
-      videoUrl: 'https://www.youtube.com/watch?v=C_78DM4vpdI',
-      source: 'OpenAI',
-      useCase: 'content',
-      difficulty: 'beginner',
-      fullDescription: 'ChatGPT Plus gives you access to GPT-4, the most advanced AI language model. Perfect for creative writing, code generation, complex problem-solving, and general assistance. Includes DALL-E 3 for image generation and custom GPTs for specialized tasks.',
-      specifications: {
-        'Model Type': 'Large Language Model',
-        'Context Length': '32K tokens',
-        'Languages': '100+',
-        'API Access': 'Limited',
-        'Training Data': 'Up to April 2023'
-      }
-    },
-    {
-      id: 2,
-      name: 'ChatGPT Pro',
-      tagline: 'Enterprise Power 💼',
-      provider: 'OpenAI',
-      price: 200,
-      unit: '/month',
-      image: 'https://images.unsplash.com/photo-1676277791608-ac8206f0d3ba?w=400&h=400&fit=crop',
-      badge: 'Pro Choice',
-      badgeColor: 'bg-purple-500',
-      rating: 4.9,
-      reviews: 3456,
-      features: ['Unlimited GPT-4', 'Priority Access', 'Extended Context', 'Team Collaboration', 'API Credits'],
-      stats: { context: '128K tokens', uptime: '99.99%', support: '24/7' },
-      category: 'Language Model',
-      description: 'For professionals who need maximum AI power',
-      apiPricing: { input: '$0.01/1K', output: '$0.03/1K' },
-      source: 'OpenAI',
-      useCase: 'productivity',
-      difficulty: 'advanced',
-      fullDescription: 'ChatGPT Pro is designed for enterprise users who need unlimited access to GPT-4 with extended context windows and priority processing. Perfect for teams and organizations.',
-      specifications: {
-        'Model Type': 'Large Language Model',
-        'Context Length': '128K tokens',
-        'Rate Limits': 'Unlimited',
-        'API Access': 'Full',
-        'Team Features': 'Yes'
-      }
-    },
-    // Add more products as needed - keeping it concise for brevity
-  ];
-  
-  const product = allProducts.find(p => p.id === parseInt(id));
-  
-  if (!product) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
-          <button
-            onClick={() => navigate('/')}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
-          >
-            Back to Store
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <SEO 
-        title={product.name}
-        description={`${product.fullDescription || product.description} - ${product.tagline}. Price: $${product.price}${product.unit}. Rating: ${product.rating}/5.`}
-        keywords={`${product.name}, ${product.provider}, ${product.category}, AI model, ${product.useCase}, ${product.difficulty}`}
-        url={`/product/${product.id}`}
-        image={product.image}
-      />
-      
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => navigate('/')}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
-            >
-              <ArrowRight className="h-5 w-5 rotate-180" />
-              <span>Back to Store</span>
-            </button>
-            <div className="flex items-center space-x-4">
-              <Link to="/cart" className="relative p-2 text-gray-600 hover:text-gray-900">
-                <ShoppingCart className="h-6 w-6" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Product Detail */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Product Image & Video */}
-          <div className="space-y-4">
-            <div className="aspect-square bg-white rounded-xl shadow-sm overflow-hidden">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            {product.videoUrl && (
-              <div className="aspect-video bg-gray-900 rounded-xl overflow-hidden">
-                <ReactPlayer
-                  url={product.videoUrl}
-                  width="100%"
-                  height="100%"
-                  controls
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Product Info */}
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-center space-x-2 mb-2">
-                {product.badge && (
-                  <span className={`${product.badgeColor} text-white px-2 py-1 rounded-full text-xs font-medium`}>
-                    {product.badge}
-                  </span>
-                )}
-                <span className="text-sm text-gray-500">{product.provider}</span>
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
-              <p className="text-xl text-gray-600 mb-4">{product.tagline}</p>
-              
-              {/* Rating */}
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-5 w-5 ${
-                        i < Math.floor(product.rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm text-gray-600">
-                  {product.rating} ({product.reviews?.toLocaleString()} reviews)
-                </span>
-              </div>
-            </div>
-
-            {/* Pricing */}
-            <div className="border-t border-b border-gray-200 py-6">
-              <div className="flex items-baseline space-x-2">
-                {product.originalPrice && (
-                  <span className="text-lg text-gray-500 line-through">
-                    ${product.originalPrice}
-                  </span>
-                )}
-                <span className="text-3xl font-bold text-gray-900">
-                  ${product.price}
-                </span>
-                <span className="text-gray-600">{product.unit}</span>
-              </div>
-            </div>
-
-            {/* Features */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Key Features</h3>
-              <ul className="space-y-2">
-                {product.features?.map((feature, index) => (
-                  <li key={index} className="flex items-center space-x-2">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                    <span className="text-gray-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Description */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
-              <p className="text-gray-700 leading-relaxed">
-                {product.fullDescription || product.description}
-              </p>
-            </div>
-
-            {/* Specifications */}
-            {product.specifications && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Specifications</h3>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <dl className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
-                    {Object.entries(product.specifications).map(([key, value]) => (
-                      <div key={key}>
-                        <dt className="text-sm font-medium text-gray-500">{key}</dt>
-                        <dd className="text-sm text-gray-900">{value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </div>
-              </div>
-            )}
-
-            {/* Add to Cart */}
-            <div className="flex space-x-4">
-              <button
-                onClick={() => addItem(product)}
-                className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                <span>Add to Cart</span>
-              </button>
-              <button className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-                <Heart className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // Main App Component
 function PrometheusApp() {
   const [activeCategory, setActiveCategory] = useState('all');
@@ -1116,7 +310,7 @@ function PrometheusApp() {
     searchQuery: ''
   });
 
-  const { rocketAnimations, showCheckout, setShowCheckout } = useCart();
+  const { rocketAnimations } = useCart();
 
   // Live stats with proper parsing
   const [liveStats, setLiveStats] = useState({
@@ -1426,7 +620,7 @@ function PrometheusApp() {
     
     // Budget constraints
     const budgetFilter = (product) => {
-      const budgetValue = budgetAnswer.value || budgetAnswer;
+      const budgetValue = budgetAnswer.answer || budgetAnswer;
       switch (budgetValue) {
         case '25':
         case 0: return product.price <= 25;
@@ -1439,7 +633,7 @@ function PrometheusApp() {
     };
     
     // Goal-based recommendations with enhanced logic
-    const goalValue = goalAnswer.value || goalAnswer;
+    const goalValue = goalAnswer.answer || goalAnswer;
     if (goalValue === 'productivity' || goalValue === 0) {
       recommendations = allProducts.filter(p => 
         (p.useCase === 'productivity' || p.category === 'Workflow' || p.category === 'Data' || 
@@ -1467,7 +661,7 @@ function PrometheusApp() {
     }
     
     // If skill level is beginner, prioritize beginner-friendly options
-    const skillValue = skillAnswer.value || skillAnswer;
+    const skillValue = skillAnswer.answer || skillAnswer;
     if (skillValue === 'beginner' || skillValue === 0) {
       const beginnerFriendly = recommendations.filter(p => 
         p.difficulty === 'beginner' ||
@@ -1487,7 +681,7 @@ function PrometheusApp() {
     
     // Enhanced fallback logic: if less than 3 recommendations, broaden search
     if (recommendations.length < 3) {
-      const budgetValue = budgetAnswer.value || budgetAnswer;
+      const budgetValue = budgetAnswer.answer || budgetAnswer;
       const maxBudget = budgetValue === 'unlimited' || budgetValue === 3 ? Infinity : 
                        budgetValue === '25' || budgetValue === 0 ? 25 :
                        budgetValue === '100' || budgetValue === 1 ? 100 : 500;
@@ -1890,7 +1084,7 @@ function PrometheusApp() {
 
   // Header Component
   const Header = () => {
-    const { totalItems, setShowCheckout } = useCart();
+    const { totalItems } = useCart();
     const [searchQuery, setSearchQuery] = useState('');
     
     return (
@@ -1957,7 +1151,6 @@ function PrometheusApp() {
             </motion.button>
             
             <motion.button
-              onClick={() => setShowCheckout(true)}
               className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -2114,13 +1307,11 @@ function PrometheusApp() {
               controls={false}
             />
           ) : (
-            <Link to={`/product/${product.id}`}>
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
-              />
-            </Link>
+            <img
+              src={product.image}
+              alt={product.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
           )}
           
           {/* Badge */}
@@ -2145,12 +1336,7 @@ function PrometheusApp() {
         <div className="p-6">
           <div className="flex items-start justify-between mb-3">
             <div>
-              <Link 
-                to={`/product/${product.id}`}
-                className="font-bold text-lg text-gray-900 mb-1 hover:text-blue-600 transition-colors block"
-              >
-                {product.name}
-              </Link>
+              <h3 className="font-bold text-lg text-gray-900 mb-1">{product.name}</h3>
               <p className="text-sm text-gray-600">{product.tagline}</p>
             </div>
             <div className="flex items-center">
@@ -2193,24 +1379,15 @@ function PrometheusApp() {
               <span className="text-sm text-gray-600 ml-1">{product.unit}</span>
             </div>
             
-            <div className="flex space-x-2">
-              <Link
-                to={`/product/${product.id}`}
-                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors"
-              >
-                <Play size={14} className="mr-1" />
-                View Details
-              </Link>
-              <motion.button
-                onClick={() => addItem(product)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-semibold flex items-center transition-colors"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <ShoppingCart size={14} className="mr-1" />
-                Add to Cart
-              </motion.button>
-            </div>
+            <motion.button
+              onClick={() => addItem(product)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center transition-colors"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <ShoppingCart size={16} className="mr-1" />
+              Add to Cart
+            </motion.button>
           </div>
         </div>
       </motion.div>
@@ -2480,13 +1657,6 @@ function PrometheusApp() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <SEO 
-        title="AI Marketplace"
-        description="Discover the best AI models, agents, and automations. Browse ChatGPT Plus, Claude Pro, n8n workflows, Zapier integrations and more."
-        keywords="AI marketplace, ChatGPT Plus, Claude Pro, AI models, AI agents, automation, n8n, Zapier, AI tools"
-        url="/"
-      />
-      
       {/* Rocket Animations */}
       <RocketAnimation rockets={rocketAnimations} />
       
@@ -2555,32 +1725,6 @@ function PrometheusApp() {
           />
         )}
         {showQuiz && <QuizModal />}
-        <CheckoutModal 
-          isOpen={showCheckout} 
-          onClose={() => setShowCheckout(false)} 
-        />
       </AnimatePresence>
-      
-      {/* Toast Container */}
-      <Toaster />
     </div>
   );
-}
-
-// Main App Wrapper with Routing
-export default function App() {
-  return (
-    <HelmetProvider>
-      <Router>
-        <CartProvider>
-          <Routes>
-            <Route path="/" element={<PrometheusApp />} />
-            <Route path="/product/:id" element={<ProductDetailPage />} />
-            <Route path="/seller" element={<SellerDashboard />} />
-            <Route path="/community" element={<CommunityPage />} />
-          </Routes>
-        </CartProvider>
-      </Router>
-    </HelmetProvider>
-  );
-}
