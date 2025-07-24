@@ -1118,16 +1118,17 @@ function PrometheusApp() {
     timeSaved: 42381
   });
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveStats(prev => ({
-        activeUsers: prev.activeUsers + Math.floor(Math.random() * 5),
-        automationsRunning: prev.automationsRunning + Math.floor(Math.random() * 20),
-        timeSaved: prev.timeSaved + Math.floor(Math.random() * 100)
-      }));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+  // Disabled live stats updates to prevent blinking
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setLiveStats(prev => ({
+  //       activeUsers: prev.activeUsers + Math.floor(Math.random() * 2),
+  //       automationsRunning: prev.automationsRunning + Math.floor(Math.random() * 5),
+  //       timeSaved: prev.timeSaved + Math.floor(Math.random() * 25)
+  //     }));
+  //   }, 10000);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   // Enhanced product data with metadata for filtering
   const products = {
