@@ -1,7 +1,12 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext, useRef } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ShoppingCart, Sparkles, Bot, Zap, Brain, Activity, Star, Heart, Play, ChevronDown, Filter, ArrowRight, Cpu, Layers, Code, Shield, Clock, CheckCircle, TrendingUp, Users, BarChart, X, Menu, ChevronRight, Rocket, DollarSign, Award } from 'lucide-react';
+import ReactPlayer from 'react-player';
+import toast, { Toaster } from 'react-hot-toast';
+import Fuse from 'fuse.js';
 
-// Cart Context
+// Enhanced Cart Context with Rocket Animation
 const CartContext = createContext();
 
 function CartProvider({ children }) {
@@ -9,6 +14,7 @@ function CartProvider({ children }) {
     const saved = localStorage.getItem('cart');
     return saved ? JSON.parse(saved) : [];
   });
+  const [rocketAnimations, setRocketAnimations] = useState([]);
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(items));
@@ -26,12 +32,29 @@ function CartProvider({ children }) {
       }
       return [...current, { product, quantity: 1 }];
     });
+
+    // Trigger rocket animation
+    const rocketId = Date.now();
+    setRocketAnimations(prev => [...prev, { id: rocketId, product }]);
+    
+    // Remove rocket after animation
+    setTimeout(() => {
+      setRocketAnimations(prev => prev.filter(r => r.id !== rocketId));
+    }, 2000);
+
+    toast.success(`${product.name} added to cart! 🚀`, {
+      duration: 2000,
+      style: {
+        background: '#00bfff',
+        color: 'white',
+      },
+    });
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ items, addItem, totalItems }}>
+    <CartContext.Provider value={{ items, addItem, totalItems, rocketAnimations }}>
       {children}
     </CartContext.Provider>
   );
@@ -43,31 +66,473 @@ function useCart() {
   return context;
 }
 
-// Tooltip Component for Stats
+// Enhanced Tooltip Component with Outside Click Handling
 const StatsTooltip = ({ children, content, position = "bottom" }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const tooltipRef = useRef(null);
+  
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isVisible && tooltipRef.current && !tooltipRef.current.contains(event.target)) {
+        setIsVisible(false);
+      }
+    };
+    
+    if (isVisible) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [isVisible]);
   
   return (
     <div 
-      className="relative inline-block"
+      ref={tooltipRef}
+      className="relative inline-block tooltip-container"
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
-      onClick={() => setIsVisible(!isVisible)} // Mobile tap support
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsVisible(!isVisible);
+      }}
     >
       {children}
-      {isVisible && (
-        <div className={`absolute z-50 px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow-sm whitespace-nowrap
-          ${position === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2'} 
-          left-1/2 transform -translate-x-1/2
-          before:content-[''] before:absolute before:w-2 before:h-2 before:bg-gray-900 before:rotate-45 before:left-1/2 before:transform before:-translate-x-1/2
-          ${position === 'bottom' ? 'before:-top-1' : 'before:-bottom-1'}`}
-        >
-          {content}
-        </div>
-      )}
+      <AnimatePresence>
+        {isVisible && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: position === 'bottom' ? -5 : 5 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: position === 'bottom' ? -5 : 5 }}
+            transition={{ duration: 0.15 }}
+            className={`absolute z-50 px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow-sm whitespace-nowrap
+              ${position === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2'} 
+              left-1/2 transform -translate-x-1/2
+              before:content-[''] before:absolute before:w-2 before:h-2 before:bg-gray-900 before:rotate-45 before:left-1/2 before:transform before:-translate-x-1/2
+              ${position === 'bottom' ? 'before:-top-1' : 'before:-bottom-1'}`}
+          >
+            {content}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
+
+// Rocket Animation Component
+const RocketAnimation = ({ rockets }) => {
+  return (
+    <div className="fixed inset-0 pointer-events-none z-50">
+      <AnimatePresence>
+        {rockets.map((rocket) => (
+          <motion.div
+            key={rocket.id}
+            initial={{ 
+              x: typeof window !== 'undefined' ? Math.random() * window.innerWidth : 400, 
+              y: typeof window !== 'undefined' ? window.innerHeight - 100 : 500,
+              scale: 0,
+              rotate: 0
+            }}
+            animate={{ 
+              x: typeof window !== 'undefined' ? Math.random() * window.innerWidth : 600,
+              y: -100,
+              scale: [0, 1.5, 0],
+              rotate: [0, 360, 720]
+            }}
+            exit={{ opacity: 0 }}
+            transition={{ 
+              duration: 2,
+              ease: "easeOut"
+            }}
+            className="absolute text-4xl"
+          >
+            🚀
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+// Faceted Filter Component
+const FacetedFilters = ({ filters, setFilters, showFilters, setShowFilters }) => {
+  const sources = ['OpenAI', 'Anthropic', 'xAI', 'n8n', 'Zapier', 'Make', 'Python'];
+  const useCases = ['productivity', 'sales', 'support', 'content', 'marketing', 'data'];
+  
+  return (
+    <AnimatePresence>
+      {showFilters && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-lg"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Price Range */}
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">Price Range</h4>
+              <div className="space-y-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="1000"
+                  value={filters.priceRange[1]}
+                  onChange={(e) => setFilters(prev => ({
+                    ...prev,
+                    priceRange: [0, parseInt(e.target.value)]
+                  }))}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>$0</span>
+                  <span>${filters.priceRange[1]}/month</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Sources */}
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">Source</h4>
+              <div className="space-y-1 max-h-32 overflow-y-auto">
+                {sources.map(source => (
+                  <label key={source} className="flex items-center text-sm">
+                    <input
+                      type="checkbox"
+                      checked={filters.sources.includes(source)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFilters(prev => ({
+                            ...prev,
+                            sources: [...prev.sources, source]
+                          }));
+                        } else {
+                          setFilters(prev => ({
+                            ...prev,
+                            sources: prev.sources.filter(s => s !== source)
+                          }));
+                        }
+                      }}
+                      className="mr-2"
+                    />
+                    {source}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Use Cases */}
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">Use Case</h4>
+              <div className="space-y-1 max-h-32 overflow-y-auto">
+                {useCases.map(useCase => (
+                  <label key={useCase} className="flex items-center text-sm">
+                    <input
+                      type="checkbox"
+                      checked={filters.useCases.includes(useCase)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFilters(prev => ({
+                            ...prev,
+                            useCases: [...prev.useCases, useCase]
+                          }));
+                        } else {
+                          setFilters(prev => ({
+                            ...prev,
+                            useCases: prev.useCases.filter(u => u !== useCase)
+                          }));
+                        }
+                      }}
+                      className="mr-2"
+                    />
+                    {useCase.charAt(0).toUpperCase() + useCase.slice(1)}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Rating */}
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">Minimum Rating</h4>
+              <select
+                value={filters.rating}
+                onChange={(e) => setFilters(prev => ({
+                  ...prev,
+                  rating: parseFloat(e.target.value)
+                }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              >
+                <option value="0">Any Rating</option>
+                <option value="4.0">4.0+ Stars</option>
+                <option value="4.5">4.5+ Stars</option>
+                <option value="4.8">4.8+ Stars</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center mt-4 pt-4 border-t">
+            <button
+              onClick={() => setFilters({
+                priceRange: [0, 1000],
+                sources: [],
+                useCases: [],
+                rating: 0,
+                searchQuery: ''
+              })}
+              className="text-gray-600 hover:text-gray-800 text-sm"
+            >
+              Clear All Filters
+            </button>
+            <button
+              onClick={() => setShowFilters(false)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors"
+            >
+              Apply Filters
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+// Product Detail Page Component
+function ProductDetailPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { addItem } = useCart();
+  
+  // Get all products
+  const allProducts = [
+    // Models
+    {
+      id: 1,
+      name: 'ChatGPT Plus',
+      tagline: 'The Creative Genius 🎨',
+      provider: 'OpenAI',
+      price: 20,
+      originalPrice: null,
+      unit: '/month',
+      image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=400&fit=crop',
+      badge: 'Most Popular 🔥',
+      badgeColor: 'bg-blue-500',
+      rating: 4.8,
+      reviews: 15420,
+      features: ['GPT-4 Access', 'DALL-E 3', 'Advanced Analytics', 'Code Interpreter', 'Custom GPTs'],
+      stats: { users: '100M+', satisfaction: '98%', responseTime: '1.2s' },
+      category: 'Language Model',
+      description: 'Perfect for creative writing, coding help, and general assistance',
+      videoUrl: 'https://www.youtube.com/watch?v=C_78DM4vpdI',
+      source: 'OpenAI',
+      useCase: 'content',
+      difficulty: 'beginner',
+      fullDescription: 'ChatGPT Plus gives you access to GPT-4, the most advanced AI language model. Perfect for creative writing, code generation, complex problem-solving, and general assistance. Includes DALL-E 3 for image generation and custom GPTs for specialized tasks.',
+      specifications: {
+        'Model Type': 'Large Language Model',
+        'Context Length': '32K tokens',
+        'Languages': '100+',
+        'API Access': 'Limited',
+        'Training Data': 'Up to April 2023'
+      }
+    },
+    {
+      id: 2,
+      name: 'ChatGPT Pro',
+      tagline: 'Enterprise Power 💼',
+      provider: 'OpenAI',
+      price: 200,
+      unit: '/month',
+      image: 'https://images.unsplash.com/photo-1676277791608-ac8206f0d3ba?w=400&h=400&fit=crop',
+      badge: 'Pro Choice',
+      badgeColor: 'bg-purple-500',
+      rating: 4.9,
+      reviews: 3456,
+      features: ['Unlimited GPT-4', 'Priority Access', 'Extended Context', 'Team Collaboration', 'API Credits'],
+      stats: { context: '128K tokens', uptime: '99.99%', support: '24/7' },
+      category: 'Language Model',
+      description: 'For professionals who need maximum AI power',
+      apiPricing: { input: '$0.01/1K', output: '$0.03/1K' },
+      source: 'OpenAI',
+      useCase: 'productivity',
+      difficulty: 'advanced',
+      fullDescription: 'ChatGPT Pro is designed for enterprise users who need unlimited access to GPT-4 with extended context windows and priority processing. Perfect for teams and organizations.',
+      specifications: {
+        'Model Type': 'Large Language Model',
+        'Context Length': '128K tokens',
+        'Rate Limits': 'Unlimited',
+        'API Access': 'Full',
+        'Team Features': 'Yes'
+      }
+    },
+    // Add more products as needed - keeping it concise for brevity
+  ];
+  
+  const product = allProducts.find(p => p.id === parseInt(id));
+  
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
+          <button
+            onClick={() => navigate('/')}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+          >
+            Back to Store
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+            >
+              <ArrowRight className="h-5 w-5 rotate-180" />
+              <span>Back to Store</span>
+            </button>
+            <div className="flex items-center space-x-4">
+              <Link to="/cart" className="relative p-2 text-gray-600 hover:text-gray-900">
+                <ShoppingCart className="h-6 w-6" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Product Detail */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Product Image & Video */}
+          <div className="space-y-4">
+            <div className="aspect-square bg-white rounded-xl shadow-sm overflow-hidden">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {product.videoUrl && (
+              <div className="aspect-video bg-gray-900 rounded-xl overflow-hidden">
+                <ReactPlayer
+                  url={product.videoUrl}
+                  width="100%"
+                  height="100%"
+                  controls
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Product Info */}
+          <div className="space-y-6">
+            <div>
+              <div className="flex items-center space-x-2 mb-2">
+                {product.badge && (
+                  <span className={`${product.badgeColor} text-white px-2 py-1 rounded-full text-xs font-medium`}>
+                    {product.badge}
+                  </span>
+                )}
+                <span className="text-sm text-gray-500">{product.provider}</span>
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+              <p className="text-xl text-gray-600 mb-4">{product.tagline}</p>
+              
+              {/* Rating */}
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="flex items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-5 w-5 ${
+                        i < Math.floor(product.rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm text-gray-600">
+                  {product.rating} ({product.reviews?.toLocaleString()} reviews)
+                </span>
+              </div>
+            </div>
+
+            {/* Pricing */}
+            <div className="border-t border-b border-gray-200 py-6">
+              <div className="flex items-baseline space-x-2">
+                {product.originalPrice && (
+                  <span className="text-lg text-gray-500 line-through">
+                    ${product.originalPrice}
+                  </span>
+                )}
+                <span className="text-3xl font-bold text-gray-900">
+                  ${product.price}
+                </span>
+                <span className="text-gray-600">{product.unit}</span>
+              </div>
+            </div>
+
+            {/* Features */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Key Features</h3>
+              <ul className="space-y-2">
+                {product.features?.map((feature, index) => (
+                  <li key={index} className="flex items-center space-x-2">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <span className="text-gray-700">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Description */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
+              <p className="text-gray-700 leading-relaxed">
+                {product.fullDescription || product.description}
+              </p>
+            </div>
+
+            {/* Specifications */}
+            {product.specifications && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Specifications</h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <dl className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
+                    {Object.entries(product.specifications).map(([key, value]) => (
+                      <div key={key}>
+                        <dt className="text-sm font-medium text-gray-500">{key}</dt>
+                        <dd className="text-sm text-gray-900">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              </div>
+            )}
+
+            {/* Add to Cart */}
+            <div className="flex space-x-4">
+              <button
+                onClick={() => addItem(product)}
+                className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                <span>Add to Cart</span>
+              </button>
+              <button className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                <Heart className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Main App Component
 function PrometheusApp() {
@@ -77,6 +542,16 @@ function PrometheusApp() {
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizStep, setQuizStep] = useState(0);
   const [quizAnswers, setQuizAnswers] = useState([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    priceRange: [0, 1000],
+    sources: [],
+    useCases: [],
+    rating: 0,
+    searchQuery: ''
+  });
+
+  const { rocketAnimations } = useCart();
 
   // Live stats with proper parsing
   const [liveStats, setLiveStats] = useState({
@@ -96,7 +571,7 @@ function PrometheusApp() {
     return () => clearInterval(interval);
   }, []);
 
-  // Updated product data with correct 2025 pricing
+  // Enhanced product data with metadata for filtering
   const products = {
     models: [
       {
@@ -116,7 +591,10 @@ function PrometheusApp() {
         stats: { users: '100M+', satisfaction: '98%', responseTime: '1.2s' },
         category: 'Language Model',
         description: 'Perfect for creative writing, coding help, and general assistance',
-        videoUrl: 'https://example.com/chatgpt-demo.mp4'
+        videoUrl: 'https://www.youtube.com/watch?v=C_78DM4vpdI',
+        source: 'OpenAI',
+        useCase: 'content',
+        difficulty: 'beginner'
       },
       {
         id: 2,
@@ -134,7 +612,10 @@ function PrometheusApp() {
         stats: { context: '128K tokens', uptime: '99.99%', support: '24/7' },
         category: 'Language Model',
         description: 'For professionals who need maximum AI power',
-        apiPricing: { input: '$0.01/1K', output: '$0.03/1K' }
+        apiPricing: { input: '$0.01/1K', output: '$0.03/1K' },
+        source: 'OpenAI',
+        useCase: 'productivity',
+        difficulty: 'advanced'
       },
       {
         id: 3,
@@ -152,7 +633,10 @@ function PrometheusApp() {
         stats: { accuracy: '99.2%', context: '200K tokens', ethics: 'A+' },
         category: 'Language Model',
         description: 'Ideal for deep research and complex analysis',
-        videoUrl: 'https://example.com/claude-demo.mp4'
+        videoUrl: 'https://www.youtube.com/watch?v=example',
+        source: 'Anthropic',
+        useCase: 'productivity',
+        difficulty: 'intermediate'
       },
       {
         id: 4,
@@ -170,7 +654,10 @@ function PrometheusApp() {
         features: ['Unlimited Context', 'Priority Processing', 'Custom Training', 'Enterprise Support'],
         stats: { processing: 'Real-time', availability: '100%', customization: 'Full' },
         category: 'Language Model',
-        description: 'The ultimate Claude experience for enterprises'
+        description: 'The ultimate Claude experience for enterprises',
+        source: 'Anthropic',
+        useCase: 'productivity',
+        difficulty: 'advanced'
       },
       {
         id: 5,
@@ -189,7 +676,10 @@ function PrometheusApp() {
         category: 'Language Model',
         description: 'Access to x.ai/grok for full details',
         apiPricing: { input: '$3/1M', output: '$15/1M' },
-        externalLink: 'https://x.ai/grok'
+        externalLink: 'https://x.ai/grok',
+        source: 'xAI',
+        useCase: 'content',
+        difficulty: 'intermediate'
       }
     ],
     agents: [
@@ -209,7 +699,10 @@ function PrometheusApp() {
         features: ['24/7 Availability', 'Multi-Language', 'Sentiment Analysis', 'Auto-Escalation', 'CRM Integration'],
         stats: { resolved: '94%', languages: '50+', uptime: '99.9%' },
         category: 'Customer Service',
-        description: 'AI Agent: A smart bot that handles customer inquiries automatically'
+        description: 'AI Agent: A smart bot that handles customer inquiries automatically',
+        source: 'n8n',
+        useCase: 'support',
+        difficulty: 'beginner'
       },
       {
         id: 7,
@@ -226,7 +719,10 @@ function PrometheusApp() {
         features: ['Lead Scoring AI', 'Email Sequences', 'CRM Sync', 'Deal Tracking', 'Slack Notifications'],
         stats: { conversion: '+47%', deals: '2.3x', roi: '580%' },
         category: 'Sales',
-        description: 'Automation: Connects your apps to work together automatically'
+        description: 'Automation: Connects your apps to work together automatically',
+        source: 'Zapier',
+        useCase: 'sales',
+        difficulty: 'intermediate'
       }
     ],
     automations: [
@@ -246,7 +742,10 @@ function PrometheusApp() {
         features: ['Auto-Post', 'AI Captions', 'Trend Analysis', 'Multi-Platform', 'Analytics Dashboard'],
         stats: { platforms: '8+', posts: 'Unlimited', engagement: '+215%' },
         category: 'Marketing',
-        description: 'Save 12 hours per week on social media management'
+        description: 'Save 12 hours per week on social media management',
+        source: 'Make',
+        useCase: 'marketing',
+        difficulty: 'beginner'
       },
       {
         id: 9,
@@ -263,7 +762,10 @@ function PrometheusApp() {
         features: ['Real-Time Sync', 'Data Validation', 'Error Handling', 'Custom Scripts', 'API Webhooks'],
         stats: { throughput: '1M/hour', accuracy: '99.99%', sources: '200+' },
         category: 'Data',
-        description: 'Professional data automation for serious businesses'
+        description: 'Professional data automation for serious businesses',
+        source: 'Python',
+        useCase: 'data',
+        difficulty: 'advanced'
       },
       {
         id: 10,
@@ -280,7 +782,10 @@ function PrometheusApp() {
         features: ['Visual Builder', 'Pre-built Templates', 'Community Support', 'Self-Hosted Option'],
         stats: { nodes: '300+', templates: '1000+', community: '50K+' },
         category: 'Workflow',
-        description: 'Perfect starting point for automation beginners'
+        description: 'Perfect starting point for automation beginners',
+        source: 'n8n',
+        useCase: 'productivity',
+        difficulty: 'beginner'
       },
       {
         id: 11,
@@ -298,13 +803,149 @@ function PrometheusApp() {
         features: ['5000+ Apps', 'Multi-Step Zaps', 'Filters & Logic', 'Team Collaboration'],
         stats: { apps: '5000+', zaps: 'Unlimited', support: 'Priority' },
         category: 'Integration',
-        description: 'The easiest way to automate your work'
+        description: 'The easiest way to automate your work',
+        source: 'Zapier',
+        useCase: 'productivity',
+        difficulty: 'intermediate'
       }
     ]
   };
 
   const allProducts = [...products.models, ...products.agents, ...products.automations];
-  const displayProducts = activeCategory === 'all' ? allProducts : products[activeCategory] || [];
+  
+  // Enhanced filtering logic with Fuse.js search
+  const getFilteredProducts = () => {
+    let filtered = activeCategory === 'all' ? allProducts : products[activeCategory] || [];
+    
+    // Apply search with fuzzy matching
+    if (filters.searchQuery) {
+      const fuse = new Fuse(filtered, {
+        keys: ['name', 'description', 'features', 'provider'],
+        threshold: 0.3
+      });
+      const searchResults = fuse.search(filters.searchQuery);
+      filtered = searchResults.map(result => result.item);
+    }
+    
+    // Apply price range
+    filtered = filtered.filter(product => 
+      product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1]
+    );
+    
+    // Apply sources
+    if (filters.sources.length > 0) {
+      filtered = filtered.filter(product => filters.sources.includes(product.source));
+    }
+    
+    // Apply use cases
+    if (filters.useCases.length > 0) {
+      filtered = filtered.filter(product => filters.useCases.includes(product.useCase));
+    }
+    
+    // Apply rating
+    if (filters.rating > 0) {
+      filtered = filtered.filter(product => product.rating >= filters.rating);
+    }
+    
+    return filtered;
+  };
+
+  const displayProducts = getFilteredProducts();
+
+  // Enhanced quiz recommendations with fallback logic
+  const getQuizRecommendations = () => {
+    if (quizAnswers.length < 3) return [];
+    
+    const [goalAnswer, skillAnswer, budgetAnswer] = quizAnswers;
+    let recommendations = [];
+    
+    // Budget constraints
+    const budgetFilter = (product) => {
+      const budgetValue = budgetAnswer.value || budgetAnswer;
+      switch (budgetValue) {
+        case '25':
+        case 0: return product.price <= 25;
+        case '100':
+        case 1: return product.price <= 100;
+        case '500':
+        case 2: return product.price <= 500;
+        default: return true;
+      }
+    };
+    
+    // Goal-based recommendations with enhanced logic
+    const goalValue = goalAnswer.value || goalAnswer;
+    if (goalValue === 'productivity' || goalValue === 0) {
+      recommendations = allProducts.filter(p => 
+        (p.useCase === 'productivity' || p.category === 'Workflow' || p.category === 'Data' || 
+         p.features.some(f => f.toLowerCase().includes('automation'))) && 
+        budgetFilter(p)
+      );
+    } else if (goalValue === 'sales' || goalValue === 1) {
+      recommendations = allProducts.filter(p => 
+        (p.useCase === 'sales' || p.category === 'Sales' || 
+         p.features.some(f => f.toLowerCase().includes('sales') || f.toLowerCase().includes('lead'))) && 
+        budgetFilter(p)
+      );
+    } else if (goalValue === 'support' || goalValue === 2) {
+      recommendations = allProducts.filter(p => 
+        (p.useCase === 'support' || p.category === 'Customer Service' || 
+         p.features.some(f => f.toLowerCase().includes('support') || f.toLowerCase().includes('chat'))) && 
+        budgetFilter(p)
+      );
+    } else {
+      recommendations = allProducts.filter(p => 
+        (p.useCase === 'content' || p.category === 'Language Model' || p.category === 'Marketing' || 
+         p.features.some(f => f.toLowerCase().includes('content') || f.toLowerCase().includes('writing'))) && 
+        budgetFilter(p)
+      );
+    }
+    
+    // If skill level is beginner, prioritize beginner-friendly options
+    const skillValue = skillAnswer.value || skillAnswer;
+    if (skillValue === 'beginner' || skillValue === 0) {
+      const beginnerFriendly = recommendations.filter(p => 
+        p.difficulty === 'beginner' ||
+        p.badge?.toLowerCase().includes('beginner') || 
+        p.features.some(f => 
+          f.toLowerCase().includes('visual') || 
+          f.toLowerCase().includes('template') ||
+          f.toLowerCase().includes('no-code')
+        ) ||
+        p.source === 'n8n' ||
+        p.source === 'Zapier'
+      );
+      if (beginnerFriendly.length > 0) {
+        recommendations = beginnerFriendly;
+      }
+    }
+    
+    // Enhanced fallback logic: if less than 3 recommendations, broaden search
+    if (recommendations.length < 3) {
+      const budgetValue = budgetAnswer.value || budgetAnswer;
+      const maxBudget = budgetValue === 'unlimited' || budgetValue === 3 ? Infinity : 
+                       budgetValue === '25' || budgetValue === 0 ? 25 :
+                       budgetValue === '100' || budgetValue === 1 ? 100 : 500;
+      
+      // First try: same use case but ignore skill level
+      let fallbackRecs = allProducts.filter(p => p.price <= maxBudget);
+      
+      // If still not enough, get top-rated products within budget
+      if (fallbackRecs.length < 3) {
+        fallbackRecs = allProducts.filter(p => p.price <= maxBudget * 2); // Double budget as last resort
+      }
+      
+      recommendations = fallbackRecs
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, 3);
+    } else {
+      recommendations = recommendations
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, 3);
+    }
+    
+    return recommendations;
+  };
 
   // Style utilities
   const gradientText = "bg-gradient-to-r from-blue-600 to-cyan-400 bg-clip-text text-transparent";
@@ -326,6 +967,162 @@ function PrometheusApp() {
     document.head.appendChild(styleSheet);
     return () => document.head.removeChild(styleSheet);
   }, []);
+
+  // Enhanced Neural Background with Full Framer Motion
+  const NeuralBackground = () => {
+    const [particles, setParticles] = useState([]);
+    const [connections, setConnections] = useState([]);
+    
+    useEffect(() => {
+      const newParticles = Array.from({ length: 20 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 4 + 2,
+        duration: Math.random() * 15 + 10,
+        delay: Math.random() * 5
+      }));
+      
+      // Generate connections between nearby particles
+      const newConnections = [];
+      for (let i = 0; i < newParticles.length; i++) {
+        for (let j = i + 1; j < newParticles.length; j++) {
+          const dx = newParticles[i].x - newParticles[j].x;
+          const dy = newParticles[i].y - newParticles[j].y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance < 25) {
+            newConnections.push({
+              from: i,
+              to: j,
+              opacity: Math.max(0.1, 0.4 - distance / 60)
+            });
+          }
+        }
+      }
+      
+      setParticles(newParticles);
+      setConnections(newConnections);
+    }, []);
+
+    return (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div 
+          className="absolute inset-0 bg-gradient-to-br from-blue-50 via-transparent to-cyan-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.6 }}
+          transition={{ duration: 2 }}
+        />
+        <svg className="absolute inset-0 w-full h-full">
+          <defs>
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          
+          {/* Animated connections */}
+          {connections.map((connection, index) => {
+            const fromParticle = particles[connection.from];
+            const toParticle = particles[connection.to];
+            
+            if (!fromParticle || !toParticle) return null;
+            
+            return (
+              <motion.line
+                key={`connection-${index}`}
+                x1={`${fromParticle.x}%`}
+                y1={`${fromParticle.y}%`}
+                x2={`${toParticle.x}%`}
+                y2={`${toParticle.y}%`}
+                stroke="#00bfff"
+                strokeWidth="1"
+                initial={{ opacity: 0 }}
+                animate={{
+                  opacity: [0.1, connection.opacity, 0.1],
+                }}
+                transition={{
+                  duration: 8,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                style={{ filter: 'url(#glow)' }}
+              />
+            );
+          })}
+          
+          {/* Animated particles */}
+          {particles.map((particle) => (
+            <motion.g key={particle.id}>
+              <motion.circle
+                cx={`${particle.x}%`}
+                cy={`${particle.y}%`}
+                r={particle.size}
+                fill="#00bfff"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{
+                  x: [`${particle.x}%`, `${particle.x + 10}%`, `${particle.x}%`],
+                  y: [`${particle.y}%`, `${particle.y - 15}%`, `${particle.y}%`],
+                  scale: [1, 1.2, 1],
+                  opacity: [0.3, 0.8, 0.3],
+                }}
+                transition={{
+                  duration: particle.duration,
+                  delay: particle.delay,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                style={{ filter: 'url(#glow)' }}
+              />
+              
+              {/* Pulsing outer ring */}
+              <motion.circle
+                cx={`${particle.x}%`}
+                cy={`${particle.y}%`}
+                r={particle.size * 2}
+                fill="none"
+                stroke="#00bfff"
+                strokeWidth="0.5"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{
+                  scale: [1, 1.5, 1],
+                  opacity: [0.5, 0, 0.5],
+                }}
+                transition={{
+                  duration: particle.duration * 0.7,
+                  delay: particle.delay + 1,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+            </motion.g>
+          ))}
+        </svg>
+        
+        {/* Scanning line effect */}
+        <motion.div
+          className="absolute inset-0 opacity-20"
+          initial={{ background: 'linear-gradient(90deg, transparent 0%, rgba(0, 191, 255, 0.1) 50%, transparent 100%)' }}
+          animate={{
+            x: ['-100%', '100%'],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+          style={{
+            width: '200%',
+            height: '2px',
+            top: '30%',
+          }}
+        />
+      </div>
+    );
+  };
 
   // Enhanced Stats Display Component
   const LiveStatsBar = () => {
@@ -449,840 +1246,762 @@ function PrometheusApp() {
           </div>
 
           {/* Expandable mobile info panel */}
-          {isExpanded && (
-            <div className="md:hidden mt-3 pt-3 border-t border-gray-700 space-y-2 animate-in slide-in-from-top-2 duration-200">
-              {statsData.map((stat, index) => {
-                const IconComponent = stat.icon;
-                return (
-                  <div key={index} className="flex items-center justify-between text-xs">
-                    <div className="flex items-center">
-                      <IconComponent size={14} className={`mr-2 ${stat.color}`} />
-                      <span className="text-gray-300">{stat.label}</span>
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="md:hidden mt-3 pt-3 border-t border-gray-700 space-y-2"
+              >
+                {statsData.map((stat, index) => {
+                  const IconComponent = stat.icon;
+                  return (
+                    <div key={index} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center">
+                        <IconComponent size={14} className={`mr-2 ${stat.color}`} />
+                        <span className="text-gray-300">{stat.label}</span>
+                      </div>
+                      <span className="font-mono font-semibold">{stat.value}</span>
                     </div>
-                    <span className="font-mono font-semibold">{stat.value}</span>
+                  );
+                })}
+                <div className="flex items-center justify-between pt-2 border-t border-gray-700">
+                  <div className="flex space-x-4 text-xs">
+                    <button className="hover:text-gray-300">Docs</button>
+                    <button className="hover:text-gray-300">Status</button>
+                    <button className="hover:text-gray-300">Community</button>
                   </div>
-                );
-              })}
-              <div className="flex items-center justify-between pt-2 border-t border-gray-700">
-                <div className="flex space-x-4 text-xs">
-                  <button className="hover:text-gray-300">Docs</button>
-                  <button className="hover:text-gray-300">Status</button>
-                  <button className="hover:text-gray-300">Community</button>
                 </div>
-              </div>
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     );
   };
 
-  // Neural Background Component
-  const NeuralBackground = () => {
-    const [particles, setParticles] = useState([]);
-    
-    useEffect(() => {
-      const newParticles = Array.from({ length: 15 }, (_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 3 + 1,
-        duration: Math.random() * 20 + 10
-      }));
-      setParticles(newParticles);
-    }, []);
+  const quizQuestions = [
+    {
+      question: "What's your main goal?",
+      options: [
+        { text: "Save time on repetitive tasks", value: "productivity" },
+        { text: "Boost sales and revenue", value: "sales" },
+        { text: "Improve customer experience", value: "support" },
+        { text: "Create content faster", value: "content" }
+      ]
+    },
+    {
+      question: "What's your skill level?",
+      options: [
+        { text: "Beginner - I need simple solutions", value: "beginner" },
+        { text: "Intermediate - I know the basics", value: "intermediate" },
+        { text: "Advanced - I want maximum control", value: "advanced" },
+        { text: "Expert - Custom solutions only", value: "expert" }
+      ]
+    },
+    {
+      question: "What's your budget range?",
+      options: [
+        { text: "Under $25/month", value: "25" },
+        { text: "$25-$100/month", value: "100" },
+        { text: "$100-$500/month", value: "500" },
+        { text: "Unlimited budget", value: "unlimited" }
+      ]
+    }
+  ];
 
-    return (
-      <div className="absolute inset-0 overflow-hidden opacity-20">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-transparent to-cyan-50" />
-        <svg className="absolute inset-0 w-full h-full">
-          {particles.map((particle, i) => (
-            <g key={particle.id}>
-              <circle
-                cx={`${particle.x}%`}
-                cy={`${particle.y}%`}
-                r={particle.size}
-                fill="#00bfff"
-                opacity="0.4"
-                className="animate-pulse"
-              />
-              {i < particles.length - 1 && (
-                <line
-                  x1={`${particle.x}%`}
-                  y1={`${particle.y}%`}
-                  x2={`${particles[i + 1].x}%`}
-                  y2={`${particles[i + 1].y}%`}
-                  stroke="#00bfff"
-                  strokeWidth="0.5"
-                  opacity="0.2"
-                />
-              )}
-            </g>
-          ))}
-        </svg>
-      </div>
-    );
+  const handleQuizAnswer = (answer) => {
+    const newAnswers = [...quizAnswers, answer];
+    setQuizAnswers(newAnswers);
+    
+    if (quizStep < quizQuestions.length - 1) {
+      setQuizStep(quizStep + 1);
+    } else {
+      setShowQuiz(false);
+      setQuizStep(0);
+    }
   };
 
   // Header Component
   const Header = () => {
     const { totalItems } = useCart();
+    const [searchQuery, setSearchQuery] = useState('');
     
     return (
-      <header className="bg-white border-b sticky top-0 z-40">
-        {/* Enhanced Live Stats Bar */}
-        <LiveStatsBar />
-
-        {/* Main header */}
-        <div className="px-4 py-4">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between">
-              {/* Logo & Categories */}
-              <div className="flex items-center space-x-4 lg:space-x-8">
-                <h1 className={`text-2xl lg:text-3xl font-bold ${gradientText}`}>
-                  Prometheus
-                </h1>
-                
-                {/* Desktop Categories */}
-                <nav className="hidden lg:flex items-center space-x-6">
-                  <button 
-                    onClick={() => setActiveCategory('all')}
-                    className={`font-medium transition-colors ${
-                      activeCategory === 'all' ? 'text-blue-600' : 'text-gray-700 hover:text-gray-900'
-                    }`}
-                  >
-                    All AI Tools
-                  </button>
-                  <button 
-                    onClick={() => setActiveCategory('models')}
-                    className={`font-medium transition-colors flex items-center ${
-                      activeCategory === 'models' ? 'text-blue-600' : 'text-gray-700 hover:text-gray-900'
-                    }`}
-                  >
-                    <Brain size={18} className="mr-1" />
-                    Models
-                  </button>
-                  <button 
-                    onClick={() => setActiveCategory('agents')}
-                    className={`font-medium transition-colors flex items-center ${
-                      activeCategory === 'agents' ? 'text-blue-600' : 'text-gray-700 hover:text-gray-900'
-                    }`}
-                  >
-                    <Bot size={18} className="mr-1" />
-                    Agents
-                  </button>
-                  <button 
-                    onClick={() => setActiveCategory('automations')}
-                    className={`font-medium transition-colors flex items-center ${
-                      activeCategory === 'automations' ? 'text-blue-600' : 'text-gray-700 hover:text-gray-900'
-                    }`}
-                  >
-                    <Layers size={18} className="mr-1" />
-                    Automations
-                  </button>
-                </nav>
-              </div>
-
-              {/* Search & Actions */}
-              <div className="flex items-center space-x-2 lg:space-x-4">
-                <div className="hidden lg:flex items-center bg-gray-100 rounded-full px-4 py-2">
-                  <Search size={18} className="text-gray-500 mr-2" />
-                  <input 
-                    type="text" 
-                    placeholder="Search AI solutions..."
-                    className="bg-transparent outline-none w-48 xl:w-64"
-                  />
-                </div>
-
-                <button className="p-2 lg:hidden">
-                  <Search size={20} className="text-gray-700" />
-                </button>
-
-                <button className="flex items-center space-x-1 text-gray-700 hover:text-gray-900">
-                  <Sparkles size={20} />
-                  <span className="hidden xl:inline">AI Advisor</span>
-                </button>
-
-                <button className="relative flex items-center space-x-1 text-gray-700 hover:text-gray-900">
-                  <ShoppingCart size={20} />
-                  {totalItems > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                      {totalItems}
-                    </span>
-                  )}
-                </button>
-
-                <button className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-3 lg:px-4 py-2 rounded-full font-medium hover:shadow-lg transition-shadow text-sm lg:text-base">
-                  Get Started
-                </button>
-              </div>
-            </div>
-
-            {/* Mobile Categories */}
-            <div className="lg:hidden mt-3 flex items-center space-x-3 overflow-x-auto scrollbar-hide pb-2">
-              <button 
-                onClick={() => setActiveCategory('all')}
-                className={`text-sm whitespace-nowrap px-3 py-1 rounded-full transition-colors ${
-                  activeCategory === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
-                }`}
-              >
-                All
-              </button>
-              <button 
-                onClick={() => setActiveCategory('models')}
-                className={`text-sm whitespace-nowrap px-3 py-1 rounded-full transition-colors flex items-center ${
-                  activeCategory === 'models' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
-                }`}
-              >
-                <Brain size={14} className="mr-1" />
-                Models
-              </button>
-              <button 
-                onClick={() => setActiveCategory('agents')}
-                className={`text-sm whitespace-nowrap px-3 py-1 rounded-full transition-colors flex items-center ${
-                  activeCategory === 'agents' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
-                }`}
-              >
-                <Bot size={14} className="mr-1" />
-                Agents
-              </button>
-              <button 
-                onClick={() => setActiveCategory('automations')}
-                className={`text-sm whitespace-nowrap px-3 py-1 rounded-full transition-colors flex items-center ${
-                  activeCategory === 'automations' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
-                }`}
-              >
-                <Layers size={14} className="mr-1" />
-                Automations
-              </button>
+      <div className="px-4 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center space-x-3">
+            <motion.div 
+              className="w-10 h-10 bg-gradient-to-r from-blue-600 to-cyan-400 rounded-lg flex items-center justify-center"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Sparkles className="text-white" size={20} />
+            </motion.div>
+            <div>
+              <h1 className={`text-2xl font-bold ${gradientText}`}>
+                Prometheus
+              </h1>
+              <p className="text-xs text-gray-500">AI Automation Store</p>
             </div>
           </div>
+
+          {/* Search Bar */}
+          <div className="flex-1 max-w-2xl mx-8">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="text"
+                placeholder="Search AI models, agents, and automations..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setFilters(prev => ({ ...prev, searchQuery: e.target.value }));
+                }}
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center space-x-4">
+            <motion.button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Filter size={16} className="mr-2" />
+              Filters
+            </motion.button>
+            
+            <motion.button
+              onClick={() => {
+                setShowQuiz(true);
+                setQuizStep(0);
+                setQuizAnswers([]);
+              }}
+              className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Brain size={16} className="mr-2" />
+              AI Quiz
+            </motion.button>
+            
+            <motion.button
+              className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <ShoppingCart size={20} />
+              {totalItems > 0 && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                >
+                  {totalItems}
+                </motion.span>
+              )}
+            </motion.button>
+          </div>
         </div>
-      </header>
+      </div>
     );
   };
 
   // Hero Section
-  const HeroSection = () => (
-    <section className="relative bg-gradient-to-b from-gray-50 to-white py-8 lg:py-12 overflow-hidden">
-      <NeuralBackground />
-      
-      <div className="relative max-w-7xl mx-auto px-4">
-        <div className="text-center space-y-4 lg:space-y-6">
-          <div className="inline-flex items-center space-x-2 bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full text-sm font-medium">
-            <Rocket size={16} />
-            <span>Launch Special: Save up to 50% on select AI tools</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
-            Unlock <span className={gradientText}>AI Power</span>
-          </h1>
-          <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">
-            Models, Agents, Automations for Everyone
-          </p>
-          <p className="text-sm lg:text-base text-gray-700 max-w-2xl mx-auto px-4">
-            No tech expertise needed. Browse, buy, and deploy AI solutions that actually work.
-            From ChatGPT to custom automations—we make AI accessible.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-4 pt-2 lg:pt-4">
-            <button className="bg-yellow-400 hover:bg-yellow-500 text-black px-5 lg:px-6 py-2.5 lg:py-3 rounded-full font-semibold transition-all transform hover:scale-105 w-full sm:w-auto flex items-center justify-center">
-              Browse AI Models
-              <ArrowRight size={20} className="ml-2" />
-            </button>
-            <button 
-              onClick={() => setShowQuiz(true)}
-              className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 px-5 lg:px-6 py-2.5 lg:py-3 rounded-full font-semibold transition-all w-full sm:w-auto"
+  const HeroSection = () => {
+    return (
+      <section className="relative bg-white overflow-hidden">
+        <NeuralBackground />
+        
+        <div className="relative max-w-7xl mx-auto px-4 py-16">
+          <div className="text-center">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-5xl md:text-6xl font-bold text-gray-900 mb-6"
             >
-              Take the Quiz (2 min)
-            </button>
+              The Future of{' '}
+              <span className={gradientText}>AI Automation</span>
+            </motion.h1>
+            
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto"
+            >
+              Discover, compare, and deploy the world's most powerful AI models, agents, and automation tools. 
+              Save thousands of hours with intelligent automation.
+            </motion.p>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6"
+            >
+              <motion.button
+                onClick={() => {
+                  setShowQuiz(true);
+                  setQuizStep(0);
+                  setQuizAnswers([]);
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg text-lg font-semibold flex items-center transition-colors"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Zap className="mr-2" size={20} />
+                Find My Perfect AI
+              </motion.button>
+              
+              <motion.button
+                className="bg-white border-2 border-gray-200 hover:border-gray-300 text-gray-800 px-8 py-4 rounded-lg text-lg font-semibold flex items-center transition-colors"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Play className="mr-2" size={20} />
+                Watch Demo
+              </motion.button>
+            </motion.div>
           </div>
+        </div>
+      </section>
+    );
+  };
 
-          <div className="grid grid-cols-3 gap-4 sm:gap-8 lg:gap-12 pt-6 lg:pt-8 max-w-sm sm:max-w-none mx-auto">
-            <div className="text-center">
-              <div className="text-2xl lg:text-3xl font-bold text-blue-600">50+</div>
-              <div className="text-xs lg:text-base text-gray-600">AI Models</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl lg:text-3xl font-bold text-blue-600">$8/mo</div>
-              <div className="text-xs lg:text-base text-gray-600">Starting Price</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl lg:text-3xl font-bold text-blue-600">5min</div>
-              <div className="text-xs lg:text-base text-gray-600">Setup Time</div>
-            </div>
+  // Category Navigation
+  const CategoryNav = () => {
+    const categories = [
+      { id: 'all', name: 'All Products', icon: Layers },
+      { id: 'models', name: 'AI Models', icon: Brain },
+      { id: 'agents', name: 'AI Agents', icon: Bot },
+      { id: 'automations', name: 'Automations', icon: Zap }
+    ];
+
+    return (
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center space-x-1 overflow-x-auto scrollbar-hide py-4">
+            {categories.map((category) => {
+              const IconComponent = category.icon;
+              const isActive = activeCategory === category.id;
+              
+              return (
+                <motion.button
+                  key={category.id}
+                  onClick={() => setActiveCategory(category.id)}
+                  className={`flex items-center px-6 py-3 rounded-lg font-medium whitespace-nowrap transition-colors ${
+                    isActive
+                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <IconComponent size={18} className="mr-2" />
+                  {category.name}
+                  <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
+                    {category.id === 'all' ? allProducts.length : (products[category.id]?.length || 0)}
+                  </span>
+                </motion.button>
+              );
+            })}
           </div>
         </div>
       </div>
-    </section>
-  );
+    );
+  };
 
-  // Product Card
+  // Product Card Component
   const ProductCard = ({ product }) => {
     const { addItem } = useCart();
-    
+    const isHovered = hoveredProduct === product.id;
+
     return (
-      <div 
-        className="bg-white rounded-lg shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group"
+      <motion.div
+        layout
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ duration: 0.3 }}
+        className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group"
         onMouseEnter={() => setHoveredProduct(product.id)}
         onMouseLeave={() => setHoveredProduct(null)}
       >
-        {/* Badge */}
-        {product.badge && (
-          <div className={`${product.badgeColor} text-white text-xs font-semibold px-3 py-1 absolute top-4 left-4 rounded-full z-10`}>
-            {product.badge}
-          </div>
-        )}
-
-        {/* Quick Actions */}
-        {hoveredProduct === product.id && (
-          <div className="absolute top-4 right-4 flex flex-col space-y-2 z-10">
-            <button 
-              className="bg-white/90 backdrop-blur p-2 rounded-full shadow-lg hover:bg-white transition-all"
-              aria-label="Add to favorites"
-            >
-              <Heart size={16} />
-            </button>
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowQuickView(product);
-              }}
-              className="bg-white/90 backdrop-blur p-2 rounded-full shadow-lg hover:bg-white transition-all"
-              aria-label="Quick view"
-            >
-              <Play size={16} />
-            </button>
-          </div>
-        )}
-
-        {/* Image */}
-        <div className="relative h-48 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
-          <img 
-            src={product.image} 
-            alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+        {/* Product Image with Video Player */}
+        <div className="relative h-48 overflow-hidden">
+          {product.videoUrl && isHovered ? (
+            <ReactPlayer
+              url={product.videoUrl}
+              width="100%"
+              height="100%"
+              playing={true}
+              muted={true}
+              loop={true}
+              controls={false}
+            />
+          ) : (
+            <Link to={`/product/${product.id}`}>
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+              />
+            </Link>
+          )}
+          
+          {/* Badge */}
+          {product.badge && (
+            <div className={`absolute top-3 left-3 ${product.badgeColor} text-white px-2 py-1 rounded-full text-xs font-semibold`}>
+              {product.badge}
+            </div>
+          )}
+          
+          {/* Quick View Button */}
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.8 }}
+            onClick={() => setShowQuickView(product)}
+            className="absolute top-3 right-3 bg-white/90 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-colors"
+          >
+            <ArrowRight size={16} />
+          </motion.button>
         </div>
 
-        {/* Content */}
-        <div className="p-4 lg:p-5">
-          {/* Header */}
-          <div className="mb-3">
-            <h3 className="text-base lg:text-lg font-semibold text-gray-900 mb-1">{product.name}</h3>
-            <p className="text-xs lg:text-sm text-gray-600">{product.tagline}</p>
-            <p className="text-xs text-gray-500 mt-1">by {product.provider}</p>
-          </div>
-
-          {/* Rating */}
-          <div className="flex items-center mb-3">
-            <div className="flex items-center">
-              {[...Array(5)].map((_, i) => (
-                <Star 
-                  key={i} 
-                  size={12} 
-                  className={i < Math.floor(product.rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}
-                />
-              ))}
-            </div>
-            <span className="text-xs lg:text-sm text-gray-600 ml-2">
-              {product.rating} ({product.reviews.toLocaleString()})
-            </span>
-          </div>
-
-          {/* Features Preview */}
-          <div className="flex flex-wrap gap-1 mb-3 lg:mb-4">
-            {product.features.slice(0, 2).map((feature, i) => (
-              <span key={i} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                {feature}
-              </span>
-            ))}
-            {product.features.length > 2 && (
-              <span className="text-xs text-gray-500">+{product.features.length - 2}</span>
-            )}
-          </div>
-
-          {/* Stats Preview */}
-          <div className="grid grid-cols-3 gap-1 lg:gap-2 mb-3 lg:mb-4 py-2 lg:py-3 border-y border-gray-100">
-            {Object.entries(product.stats).slice(0, 3).map(([key, value], i) => (
-              <div key={i} className="text-center">
-                <div className="text-xs lg:text-sm font-semibold text-gray-900">{value}</div>
-                <div className="text-xs text-gray-500 capitalize">{key}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Price & Action */}
-          <div className="flex items-end justify-between">
+        {/* Product Info */}
+        <div className="p-6">
+          <div className="flex items-start justify-between mb-3">
             <div>
-              <div className="flex items-baseline">
-                <span className="text-xl lg:text-2xl font-bold text-gray-900">${product.price}</span>
-                <span className="text-sm lg:text-base text-gray-600 ml-1">{product.unit}</span>
-              </div>
+              <Link 
+                to={`/product/${product.id}`}
+                className="font-bold text-lg text-gray-900 mb-1 hover:text-blue-600 transition-colors block"
+              >
+                {product.name}
+              </Link>
+              <p className="text-sm text-gray-600">{product.tagline}</p>
+            </div>
+            <div className="flex items-center">
+              <Star className="text-yellow-400 fill-current" size={16} />
+              <span className="ml-1 text-sm font-semibold">{product.rating}</span>
+              <span className="ml-1 text-xs text-gray-500">({product.reviews.toLocaleString()})</span>
+            </div>
+          </div>
+
+          {/* Features */}
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-1">
+              {product.features.slice(0, 3).map((feature, index) => (
+                <span
+                  key={index}
+                  className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full"
+                >
+                  {feature}
+                </span>
+              ))}
+              {product.features.length > 3 && (
+                <span className="text-xs text-gray-500 px-2 py-1">
+                  +{product.features.length - 3} more
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Pricing */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-baseline">
               {product.originalPrice && (
-                <span className="text-xs lg:text-sm text-gray-500 line-through">
+                <span className="text-sm text-gray-400 line-through mr-2">
                   ${product.originalPrice}
                 </span>
               )}
-              {product.apiPricing && (
-                <p className="text-xs text-blue-600 mt-1">
-                  API: {product.apiPricing.input} input
-                </p>
-              )}
+              <span className="text-2xl font-bold text-gray-900">
+                ${product.price}
+              </span>
+              <span className="text-sm text-gray-600 ml-1">{product.unit}</span>
             </div>
             
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                addItem(product);
-              }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg font-medium text-sm lg:text-base transition-all transform hover:scale-105"
-              aria-label={`Add ${product.name} to cart`}
-            >
-              Add to Cart
-            </button>
+            <div className="flex space-x-2">
+              <Link
+                to={`/product/${product.id}`}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors"
+              >
+                <Play size={14} className="mr-1" />
+                View Details
+              </Link>
+              <motion.button
+                onClick={() => addItem(product)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-semibold flex items-center transition-colors"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <ShoppingCart size={14} className="mr-1" />
+                Add to Cart
+              </motion.button>
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
-  };
-
-  // Dynamic Quiz Recommendation Logic
-  const getQuizRecommendations = () => {
-    if (quizAnswers.length < 3) return [];
-    
-    const [goal, skillLevel, budget] = quizAnswers;
-    let recommendations = [];
-    
-    // Budget constraints
-    const budgetFilter = (product) => {
-      switch (budget) {
-        case 0: return product.price <= 25;
-        case 1: return product.price <= 100;
-        case 2: return product.price <= 500;
-        default: return true;
-      }
-    };
-    
-    // Goal-based recommendations
-    if (goal === 0) { // Save time on repetitive tasks
-      recommendations = allProducts.filter(p => 
-        (p.category === 'Workflow' || p.category === 'Marketing' || p.category === 'Data') && 
-        budgetFilter(p)
-      );
-    } else if (goal === 1) { // Boost sales and revenue
-      recommendations = allProducts.filter(p => 
-        (p.category === 'Sales' || p.category === 'Customer Service') && 
-        budgetFilter(p)
-      );
-    } else if (goal === 2) { // Improve customer experience
-      recommendations = allProducts.filter(p => 
-        p.category === 'Customer Service' && 
-        budgetFilter(p)
-      );
-    } else { // Create content faster
-      recommendations = allProducts.filter(p => 
-        (p.category === 'Language Model' || p.category === 'Marketing') && 
-        budgetFilter(p)
-      );
-    }
-    
-    // If skill level is beginner, prioritize beginner-friendly options
-    if (skillLevel === 0) {
-      recommendations = recommendations.filter(p => 
-        p.badge?.includes('Beginner') || 
-        p.features.includes('Visual Builder') ||
-        p.features.includes('Pre-built Templates')
-      );
-    }
-    
-    return recommendations.slice(0, 3);
   };
 
   // Quick View Modal
-  const QuickViewModal = ({ product }) => {
+  const QuickViewModal = ({ product, onClose }) => {
     const { addItem } = useCart();
     
     if (!product) return null;
-    
+
     return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl max-w-lg lg:max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-4 lg:p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-xl lg:text-2xl font-bold text-gray-900">{product.name}</h3>
-                <p className="text-sm lg:text-base text-gray-600">{product.tagline}</p>
-              </div>
-              <button 
-                onClick={() => setShowQuickView(null)}
-                className="text-gray-500 hover:text-gray-700 p-1"
-                aria-label="Close modal"
-              >
-                <X size={20} />
-              </button>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="relative">
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 z-10 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            {/* Product Video/Image */}
+            <div className="h-64 overflow-hidden rounded-t-xl">
+              {product.videoUrl ? (
+                <ReactPlayer
+                  url={product.videoUrl}
+                  width="100%"
+                  height="100%"
+                  playing={true}
+                  controls={true}
+                />
+              ) : (
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
 
-            {/* Video Demo Area */}
-            <div className="aspect-video bg-gray-100 rounded-lg mb-4 lg:mb-6 relative overflow-hidden">
-              <img 
-                src={product.image} 
-                alt={`${product.name} demo`}
-                className="w-full h-full object-cover" 
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <button 
-                  className={`bg-white/90 backdrop-blur rounded-full p-3 lg:p-4 shadow-lg hover:bg-white transition-all ${!product.videoUrl ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  aria-label="Play demo video"
-                  disabled={!product.videoUrl}
-                >
-                  <Play size={24} />
-                </button>
+            {/* Product Details */}
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">{product.name}</h2>
+                  <p className="text-lg text-gray-600">{product.tagline}</p>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-baseline">
+                    {product.originalPrice && (
+                      <span className="text-lg text-gray-400 line-through mr-2">
+                        ${product.originalPrice}
+                      </span>
+                    )}
+                    <span className="text-3xl font-bold text-gray-900">
+                      ${product.price}
+                    </span>
+                    <span className="text-lg text-gray-600 ml-1">{product.unit}</span>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            {/* Description */}
-            <p className="text-gray-700 mb-4">{product.description}</p>
+              <p className="text-gray-700 mb-6">{product.description}</p>
 
-            {/* Beginner Guide */}
-            <div className="bg-blue-50 rounded-lg p-4 mb-4">
-              <h4 className="font-semibold text-blue-900 mb-2">🚀 Beginner's Guide (5 Simple Steps)</h4>
-              <ol className="text-sm text-blue-800 space-y-1">
-                <li>1. Click "Subscribe" and complete secure payment</li>
-                <li>2. Receive your API key instantly via email</li>
-                <li>3. Watch our 3-minute setup video tutorial</li>
-                <li>4. Connect to your favorite apps (no coding!)</li>
-                <li>5. Start automating and save hours every week!</li>
-              </ol>
-            </div>
-
-            {/* Bundle Offer */}
-            {product.category === 'Language Model' && (
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
-                <p className="text-sm text-purple-900">
-                  💰 <strong>Bundle & Save 20%:</strong> Pair with Zapier Automation for complete workflow
-                </p>
+              {/* Features */}
+              <div className="mb-6">
+                <h3 className="font-semibold text-gray-900 mb-3">Key Features</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {product.features.map((feature, index) => (
+                    <div key={index} className="flex items-center">
+                      <CheckCircle className="text-green-500 mr-2" size={16} />
+                      <span className="text-sm text-gray-700">{feature}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
 
-            {/* Action Buttons */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
-              <button 
+              {/* Stats */}
+              <div className="mb-6">
+                <h3 className="font-semibold text-gray-900 mb-3">Performance Stats</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  {Object.entries(product.stats).map(([key, value]) => (
+                    <div key={key} className="text-center">
+                      <div className="text-lg font-bold text-blue-600">{value}</div>
+                      <div className="text-xs text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Add to Cart */}
+              <motion.button
                 onClick={() => {
                   addItem(product);
-                  setShowQuickView(null);
+                  onClose();
                 }}
-                className="bg-blue-600 hover:bg-blue-700 text-white py-2.5 lg:py-3 rounded-lg font-semibold transition-all text-sm lg:text-base flex items-center justify-center"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center transition-colors"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <ShoppingCart size={18} className="mr-2" />
+                <ShoppingCart className="mr-2" size={20} />
                 Add to Cart - ${product.price}{product.unit}
-              </button>
-              <button 
-                className="border-2 border-gray-300 hover:border-gray-400 py-2.5 lg:py-3 rounded-lg font-semibold transition-all text-sm lg:text-base"
-              >
-                View Full Details
-              </button>
-            </div>
-
-            {/* Trust Badge */}
-            <div className="flex items-center justify-center mt-4 text-xs text-gray-600">
-              <Shield size={16} className="mr-1" />
-              <span>Stripe Secured • 30-day money-back guarantee</span>
+              </motion.button>
             </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     );
   };
 
-  // Enhanced Quiz Modal with Dynamic Recommendations
+  // AI Quiz Modal
   const QuizModal = () => {
-    const questions = [
-      {
-        question: "What's your main goal with AI?",
-        options: [
-          { text: "Save time on repetitive tasks", emoji: "⏰" },
-          { text: "Boost sales and revenue", emoji: "💰" },
-          { text: "Improve customer experience", emoji: "😊" },
-          { text: "Create content faster", emoji: "✍️" }
-        ]
-      },
-      {
-        question: "What's your technical skill level?",
-        options: [
-          { text: "Complete beginner", emoji: "🌱" },
-          { text: "Some experience", emoji: "🌿" },
-          { text: "Pretty comfortable", emoji: "🌳" },
-          { text: "I'm a pro!", emoji: "🚀" }
-        ]
-      },
-      {
-        question: "What's your budget?",
-        options: [
-          { text: "Under $25/month", emoji: "💵" },
-          { text: "$25-100/month", emoji: "💸" },
-          { text: "$100-500/month", emoji: "💰" },
-          { text: "Sky's the limit!", emoji: "🌟" }
-        ]
-      }
-    ];
+    const { addItem } = useCart();
+    const recommendations = getQuizRecommendations();
 
     if (!showQuiz) return null;
 
-    const handleAnswerClick = (answerIndex) => {
-      const newAnswers = [...quizAnswers, answerIndex];
-      setQuizAnswers(newAnswers);
-      
-      if (quizStep < questions.length - 1) {
-        setQuizStep(quizStep + 1);
-      } else {
-        // Quiz completed, show recommendations
-        setQuizStep(quizStep + 1);
-      }
-    };
-
-    const resetQuiz = () => {
-      setShowQuiz(false);
-      setQuizStep(0);
-      setQuizAnswers([]);
-    };
-
-    const recommendations = getQuizRecommendations();
-
     return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl max-w-md w-full p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-bold">Find Your Perfect AI</h3>
-            <button 
-              onClick={resetQuiz}
-              className="text-gray-500 hover:text-gray-700"
-              aria-label="Close quiz"
-            >
-              <X size={24} />
-            </button>
-          </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-white rounded-xl max-w-lg w-full"
+        >
+          {quizAnswers.length < quizQuestions.length ? (
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Find Your Perfect AI</h2>
+                <button
+                  onClick={() => setShowQuiz(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={20} />
+                </button>
+              </div>
 
-          {/* Progress Bar */}
-          <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
-            <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${((quizStep + 1) / (questions.length + 1)) * 100}%` }}
-            />
-          </div>
+              <div className="mb-6">
+                <div className="flex justify-between text-sm text-gray-600 mb-2">
+                  <span>Question {quizStep + 1} of {quizQuestions.length}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${((quizStep + 1) / quizQuestions.length) * 100}%` }}
+                  />
+                </div>
+              </div>
 
-          {quizStep < questions.length ? (
-            <div>
-              <h4 className="text-lg font-semibold mb-4">
-                {questions[quizStep].question}
-              </h4>
-              <div className="space-y-3">
-                {questions[quizStep].options.map((option, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleAnswerClick(i)}
-                    className="w-full p-4 bg-gray-50 hover:bg-blue-50 rounded-lg text-left transition-colors flex items-center justify-between group"
-                  >
-                    <span className="font-medium">{option.text}</span>
-                    <span className="text-2xl group-hover:scale-110 transition-transform">{option.emoji}</span>
-                  </button>
-                ))}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-4">{quizQuestions[quizStep].question}</h3>
+                <div className="space-y-3">
+                  {quizQuestions[quizStep].options.map((option, index) => (
+                    <motion.button
+                      key={index}
+                      onClick={() => handleQuizAnswer(option)}
+                      className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <div className="font-medium text-gray-900">{option.text}</div>
+                    </motion.button>
+                  ))}
+                </div>
               </div>
             </div>
           ) : (
-            <div className="text-center">
-              <CheckCircle size={48} className="text-green-500 mx-auto mb-4" />
-              <h4 className="text-xl font-bold mb-2">Perfect! We found your matches</h4>
-              
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Your AI Recommendations</h2>
+                <button
+                  onClick={() => setShowQuiz(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
               {recommendations.length > 0 ? (
-                <div>
-                  <p className="text-gray-600 mb-4">Based on your answers, here are our top recommendations:</p>
-                  <div className="space-y-3 mb-4">
-                    {recommendations.map(product => (
-                      <div key={product.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                        <img src={product.image} alt={product.name} className="w-12 h-12 rounded-lg object-cover" />
-                        <div className="flex-1 text-left">
-                          <h5 className="font-semibold text-sm">{product.name}</h5>
-                          <p className="text-xs text-gray-600">${product.price}{product.unit}</p>
+                <div className="space-y-4">
+                  {recommendations.map((product) => (
+                    <div key={product.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{product.name}</h3>
+                          <p className="text-sm text-gray-600">{product.tagline}</p>
+                          <div className="flex items-center mt-1">
+                            <Star className="text-yellow-400 fill-current" size={14} />
+                            <span className="ml-1 text-sm">{product.rating}</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold">${product.price}{product.unit}</div>
+                          <motion.button
+                            onClick={() => {
+                              addItem(product);
+                              setShowQuiz(false);
+                            }}
+                            className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            Add to Cart
+                          </motion.button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                  <button 
+                    </div>
+                  ))}
+                  
+                  <motion.button
                     onClick={() => {
-                      resetQuiz();
-                      setActiveCategory(recommendations[0].category.toLowerCase() === 'language model' ? 'models' : 
-                                       recommendations[0].category.toLowerCase().includes('service') || recommendations[0].category.toLowerCase().includes('sales') ? 'agents' : 'automations');
+                      setShowQuiz(false);
+                      setQuizAnswers([]);
+                      setQuizStep(0);
                     }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold"
+                    className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-lg transition-colors"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    View Recommendations
-                  </button>
+                    Take Quiz Again
+                  </motion.button>
                 </div>
               ) : (
-                <div>
-                  <p className="text-gray-600 mb-4">We recommend starting with our beginner-friendly automation tools!</p>
-                  <button 
+                <div className="text-center py-8">
+                  <Bot className="mx-auto text-gray-400 mb-4" size={48} />
+                  <p className="text-gray-600 mb-4">No perfect matches found, but don't worry!</p>
+                  <motion.button
                     onClick={() => {
-                      resetQuiz();
-                      setActiveCategory('automations');
+                      setShowQuiz(false);
+                      setQuizAnswers([]);
+                      setQuizStep(0);
                     }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    Browse Automations
-                  </button>
+                    Browse All Products
+                  </motion.button>
                 </div>
               )}
             </div>
           )}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     );
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      {/* Rocket Animations */}
+      <RocketAnimation rockets={rocketAnimations} />
+      
+      {/* Header with enhanced stats */}
+      <header className="bg-white border-b sticky top-0 z-40">
+        <LiveStatsBar />
+        <Header />
+      </header>
+      
+      {/* Hero Section */}
       <HeroSection />
-
-      {/* Category Pills */}
-      <div className="bg-white border-y py-3 lg:py-4">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center space-x-2 lg:space-x-4 overflow-x-auto scrollbar-hide">
-            <span className="text-xs lg:text-sm font-medium text-gray-700 whitespace-nowrap flex-shrink-0">Quick filters:</span>
-            {['Under $25', 'Best Rated', 'Most Popular', 'New Arrivals', 'Free Trial', 'Beginner Friendly'].map(filter => (
-              <button 
-                key={filter}
-                className="px-3 lg:px-4 py-1.5 lg:py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-xs lg:text-sm font-medium text-gray-700 whitespace-nowrap transition-colors flex-shrink-0"
-              >
-                {filter}
-              </button>
+      
+      {/* Category Navigation */}
+      <CategoryNav />
+      
+      {/* Filters */}
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <FacetedFilters 
+          filters={filters}
+          setFilters={setFilters}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+        />
+        
+        {/* Products Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <AnimatePresence>
+            {displayProducts.map(product => (
+              <ProductCard key={product.id} product={product} />
             ))}
-          </div>
+          </AnimatePresence>
         </div>
+        
+        {displayProducts.length === 0 && (
+          <div className="text-center py-12">
+            <Search className="mx-auto text-gray-400 mb-4" size={48} />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No products found</h3>
+            <p className="text-gray-600 mb-4">Try adjusting your filters or search terms</p>
+            <motion.button
+              onClick={() => {
+                setFilters({
+                  priceRange: [0, 1000],
+                  sources: [],
+                  useCases: [],
+                  rating: 0,
+                  searchQuery: ''
+                });
+                setActiveCategory('all');
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Clear All Filters
+            </motion.button>
+          </div>
+        )}
       </div>
-
-      {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
-        {/* Results Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
-          <div>
-            <h2 className="text-xl lg:text-2xl font-bold text-gray-900">
-              {activeCategory === 'all' ? 'All AI Solutions' : 
-               activeCategory === 'models' ? 'AI Language Models' :
-               activeCategory === 'agents' ? 'Autonomous AI Agents' :
-               'Workflow Automations'}
-            </h2>
-            <p className="text-sm lg:text-base text-gray-600 mt-1">
-              {displayProducts.length} products available • Save hours every week
-            </p>
-          </div>
-          
-          <div className="flex items-center space-x-2 lg:space-x-4">
-            <select className="px-3 lg:px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm lg:text-base">
-              <option>Most Relevant</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-              <option>Highest Rated</option>
-              <option>Most Reviews</option>
-              <option>Newest First</option>
-            </select>
-            
-            <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-              <Filter size={18} />
-            </button>
-          </div>
-        </div>
-
-        {/* Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-          {displayProducts.map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-
-        {/* AI Vibes Video Feed Section */}
-        <div className="mt-12 bg-white rounded-lg p-6">
-          <h3 className="text-xl font-bold mb-4 flex items-center">
-            <Play className="mr-2 text-blue-600" size={24} />
-            AI Vibes - See It In Action
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {displayProducts.slice(0, 4).map(product => (
-              <div key={product.id} className="relative aspect-[9/16] bg-gray-100 rounded-lg overflow-hidden group cursor-pointer">
-                <img 
-                  src={product.image} 
-                  alt={`${product.name} demo`}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                  <p className="font-semibold text-sm">{product.name}</p>
-                  <p className="text-xs opacity-90">by {product.provider}</p>
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className={`bg-white/20 backdrop-blur rounded-full p-3 ${!product.videoUrl ? 'opacity-50' : ''}`}>
-                    <Play size={24} className="text-white" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Trust Section */}
-        <div className="mt-12 lg:mt-16 grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-          <div className="bg-white rounded-lg p-4 lg:p-6 text-center">
-            <Shield className="w-8 lg:w-12 h-8 lg:h-12 text-blue-600 mx-auto mb-2 lg:mb-3" />
-            <h3 className="font-semibold text-sm lg:text-base mb-1 lg:mb-2">Stripe Secured</h3>
-            <p className="text-xs lg:text-sm text-gray-600">Bank-level encryption</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 lg:p-6 text-center">
-            <CheckCircle className="w-8 lg:w-12 h-8 lg:h-12 text-green-600 mx-auto mb-2 lg:mb-3" />
-            <h3 className="font-semibold text-sm lg:text-base mb-1 lg:mb-2">Verified Sellers</h3>
-            <p className="text-xs lg:text-sm text-gray-600">All providers verified</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 lg:p-6 text-center">
-            <Award className="w-8 lg:w-12 h-8 lg:h-12 text-purple-600 mx-auto mb-2 lg:mb-3" />
-            <h3 className="font-semibold text-sm lg:text-base mb-1 lg:mb-2">30-Day Guarantee</h3>
-            <p className="text-xs lg:text-sm text-gray-600">Money back, no questions</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 lg:p-6 text-center">
-            <Users className="w-8 lg:w-12 h-8 lg:h-12 text-yellow-600 mx-auto mb-2 lg:mb-3" />
-            <h3 className="font-semibold text-sm lg:text-base mb-1 lg:mb-2">50K+ Community</h3>
-            <p className="text-xs lg:text-sm text-gray-600">Learn from others</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick View Modal */}
-      <QuickViewModal product={showQuickView} />
-
-      {/* Enhanced Quiz Modal */}
-      <QuizModal />
-
-      {/* Live Notification */}
-      <div className="fixed bottom-4 right-4 left-4 sm:left-auto bg-white rounded-lg shadow-lg p-3 lg:p-4 max-w-sm mx-auto sm:mx-0 animate-pulse">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 lg:w-10 h-8 lg:h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0">
-            <Zap size={16} className="text-white" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold truncate">Sarah from Austin</p>
-            <p className="text-xs text-gray-600 truncate">just saved 10 hours with Sales Autopilot</p>
-          </div>
-        </div>
-      </div>
+      
+      {/* Modals */}
+      <AnimatePresence>
+        {showQuickView && (
+          <QuickViewModal 
+            product={showQuickView} 
+            onClose={() => setShowQuickView(null)} 
+          />
+        )}
+        {showQuiz && <QuizModal />}
+      </AnimatePresence>
+      
+      {/* Toast Container */}
+      <Toaster />
     </div>
   );
 }
 
-// Main App Wrapper
+// Main App Wrapper with Routing
 export default function App() {
   return (
-    <CartProvider>
-      <PrometheusApp />
-    </CartProvider>
+    <Router>
+      <CartProvider>
+        <Routes>
+          <Route path="/" element={<PrometheusApp />} />
+          <Route path="/product/:id" element={<ProductDetailPage />} />
+          <Route path="/seller" element={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><h1 className="text-2xl font-bold">Seller Dashboard Coming Soon</h1></div>} />
+          <Route path="/community" element={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><h1 className="text-2xl font-bold">Community Coming Soon</h1></div>} />
+        </Routes>
+      </CartProvider>
+    </Router>
   );
 }
