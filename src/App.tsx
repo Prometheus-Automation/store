@@ -888,7 +888,7 @@ function ProductDetailPage() {
       reviews: 15420,
       features: ['GPT-4 Access', 'DALL-E 3', 'Advanced Analytics', 'Code Interpreter', 'Custom GPTs'],
       stats: { users: '100M+', satisfaction: '98%', responseTime: '1.2s' },
-      category: 'Language Model',
+      category: "Language Model",
       description: 'ChatGPT Plus gives you access to GPT-4, the most advanced AI language model. Perfect for creative writing, code generation, complex problem-solving, and general assistance. Includes DALL-E 3 for image generation and custom GPTs for specialized tasks.',
       videoUrl: 'https://www.youtube.com/watch?v=C_78DM4vpdI',
       source: 'OpenAI',
@@ -1118,17 +1118,16 @@ function PrometheusApp() {
     timeSaved: 42381
   });
 
-  // Disabled live stats updates to prevent blinking
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setLiveStats(prev => ({
-  //       activeUsers: prev.activeUsers + Math.floor(Math.random() * 2),
-  //       automationsRunning: prev.automationsRunning + Math.floor(Math.random() * 5),
-  //       timeSaved: prev.timeSaved + Math.floor(Math.random() * 25)
-  //     }));
-  //   }, 10000);
-  //   return () => clearInterval(interval);
-  // }, []);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLiveStats(prev => ({
+        activeUsers: prev.activeUsers + Math.floor(Math.random() * 5),
+        automationsRunning: prev.automationsRunning + Math.floor(Math.random() * 20),
+        timeSaved: prev.timeSaved + Math.floor(Math.random() * 100)
+      }));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Enhanced product data with metadata for filtering
   const products = {
@@ -1256,7 +1255,7 @@ function PrometheusApp() {
         reviews: 2156,
         features: ['24/7 Availability', 'Multi-Language', 'Sentiment Analysis', 'Auto-Escalation', 'CRM Integration'],
         stats: { resolved: '94%', languages: '50+', uptime: '99.9%' },
-        category: 'Customer Service',
+        category: "Customer Service",
         description: 'AI Agent: A smart bot that handles customer inquiries automatically',
         source: 'n8n',
         useCase: 'support',
@@ -1276,7 +1275,7 @@ function PrometheusApp() {
         reviews: 1843,
         features: ['Lead Scoring AI', 'Email Sequences', 'CRM Sync', 'Deal Tracking', 'Slack Notifications'],
         stats: { conversion: '+47%', deals: '2.3x', roi: '580%' },
-        category: 'Sales',
+        category: "Sales",
         description: 'Automation: Connects your apps to work together automatically',
         source: 'Zapier',
         useCase: 'sales',
@@ -1299,7 +1298,7 @@ function PrometheusApp() {
         reviews: 967,
         features: ['Auto-Post', 'AI Captions', 'Trend Analysis', 'Multi-Platform', 'Analytics Dashboard'],
         stats: { platforms: '8+', posts: 'Unlimited', engagement: '+215%' },
-        category: 'Marketing',
+        category: "Marketing",
         description: 'Save 12 hours per week on social media management',
         source: 'Make',
         useCase: 'marketing',
@@ -1319,7 +1318,7 @@ function PrometheusApp() {
         reviews: 2341,
         features: ['Real-Time Sync', 'Data Validation', 'Error Handling', 'Custom Scripts', 'API Webhooks'],
         stats: { throughput: '1M/hour', accuracy: '99.99%', sources: '200+' },
-        category: 'Data',
+        category: "Data",
         description: 'Professional data automation for serious businesses',
         source: 'Python',
         useCase: 'data',
@@ -1339,7 +1338,7 @@ function PrometheusApp() {
         reviews: 5678,
         features: ['Visual Builder', 'Pre-built Templates', 'Community Support', 'Self-Hosted Option'],
         stats: { nodes: '300+', templates: '1000+', community: '50K+' },
-        category: 'Workflow',
+        category: "Workflow",
         description: 'Perfect starting point for automation beginners',
         source: 'n8n',
         useCase: 'productivity',
@@ -1360,7 +1359,7 @@ function PrometheusApp() {
         reviews: 12345,
         features: ['5000+ Apps', 'Multi-Step Zaps', 'Filters & Logic', 'Team Collaboration'],
         stats: { apps: '5000+', zaps: 'Unlimited', support: 'Priority' },
-        category: 'Integration',
+        category: "Integration",
         description: 'The easiest way to automate your work',
         source: 'Zapier',
         useCase: 'productivity',
