@@ -872,7 +872,7 @@ function ProductDetailPage() {
   const { addItem } = useCart();
   
   // Get all products
-  const allProducts = [
+  const allProducts: Product[] = [
     // Models
     {
       id: 1,
@@ -880,7 +880,6 @@ function ProductDetailPage() {
       tagline: 'The Creative Genius 🎨',
       provider: 'OpenAI',
       price: 20,
-      originalPrice: null,
       unit: '/month',
       image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJiZyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzAwYmZmZjtzdG9wLW9wYWNpdHk6MSIgLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMwMDgwZmY7c3RvcC1vcGFjaXR5OjEiIC8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjYmcpIi8+PHRleHQgeD0iMjAwIiB5PSIyMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI0OCIgZmlsbD0id2hpdGUiPkFJPC90ZXh0Pjwvc3ZnPg==',
       badge: 'Most Popular 🔥',
@@ -895,14 +894,7 @@ function ProductDetailPage() {
       source: 'OpenAI',
       useCase: 'content',
       difficulty: 'beginner',
-      fullDescription: 'ChatGPT Plus gives you access to GPT-4, the most advanced AI language model. Perfect for creative writing, code generation, complex problem-solving, and general assistance. Includes DALL-E 3 for image generation and custom GPTs for specialized tasks.',
-      specifications: {
-        'Model Type': 'Large Language Model',
-        'Context Length': '32K tokens',
-        'Languages': '100+',
-        'API Access': 'Limited',
-        'Training Data': 'Up to April 2023'
-      }
+      description: 'ChatGPT Plus gives you access to GPT-4, the most advanced AI language model. Perfect for creative writing, code generation, complex problem-solving, and general assistance. Includes DALL-E 3 for image generation and custom GPTs for specialized tasks.'
     },
     {
       id: 2,
@@ -919,24 +911,16 @@ function ProductDetailPage() {
       features: ['Unlimited GPT-4', 'Priority Access', 'Extended Context', 'Team Collaboration', 'API Credits'],
       stats: { context: '128K tokens', uptime: '99.99%', support: '24/7' },
       category: 'Language Model',
-      description: 'For professionals who need maximum AI power',
+      description: 'ChatGPT Pro is designed for enterprise users who need unlimited access to GPT-4 with extended context windows and priority processing. Perfect for teams and organizations.',
       apiPricing: { input: '$0.01/1K', output: '$0.03/1K' },
       source: 'OpenAI',
       useCase: 'productivity',
-      difficulty: 'advanced',
-      fullDescription: 'ChatGPT Pro is designed for enterprise users who need unlimited access to GPT-4 with extended context windows and priority processing. Perfect for teams and organizations.',
-      specifications: {
-        'Model Type': 'Large Language Model',
-        'Context Length': '128K tokens',
-        'Rate Limits': 'Unlimited',
-        'API Access': 'Full',
-        'Team Features': 'Yes'
-      }
+      difficulty: 'advanced'
     },
     // Add more products as needed - keeping it concise for brevity
   ];
   
-  const product = allProducts.find(p => p.id === parseInt(id));
+  const product = allProducts.find(p => p.id === parseInt(id || '0'));
   
   if (!product) {
     return (
@@ -958,7 +942,7 @@ function ProductDetailPage() {
     <div className="min-h-screen bg-gray-50">
       <SEO 
         title={product.name}
-        description={`${product.fullDescription || product.description} - ${product.tagline}. Price: $${product.price}${product.unit}. Rating: ${product.rating}/5.`}
+        description={`${product.description || product.description} - ${product.tagline}. Price: $${product.price}${product.unit}. Rating: ${product.rating}/5.`}
         keywords={`${product.name}, ${product.provider}, ${product.category}, AI model, ${product.useCase}, ${product.difficulty}`}
         url={`/product/${product.id}`}
         image={product.image}
@@ -1082,26 +1066,10 @@ function ProductDetailPage() {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
               <p className="text-gray-700 leading-relaxed">
-                {product.fullDescription || product.description}
+                {product.description || product.description}
               </p>
             </div>
 
-            {/* Specifications */}
-            {product.specifications && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Specifications</h3>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <dl className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
-                    {Object.entries(product.specifications).map(([key, value]) => (
-                      <div key={key}>
-                        <dt className="text-sm font-medium text-gray-500">{key}</dt>
-                        <dd className="text-sm text-gray-900">{value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </div>
-              </div>
-            )}
 
             {/* Add to Cart */}
             <div className="flex space-x-4">
@@ -1126,8 +1094,8 @@ function ProductDetailPage() {
 // Main App Component
 function PrometheusApp() {
   const [activeCategory, setActiveCategory] = useState('all');
-  const [hoveredProduct, setHoveredProduct] = useState(null);
-  const [showQuickView, setShowQuickView] = useState(null);
+  const [hoveredProduct, setHoveredProduct] = useState<string | number | null>(null);
+  const [showQuickView, setShowQuickView] = useState<Product | null>(null);
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizStep, setQuizStep] = useState(0);
   const [quizAnswers, setQuizAnswers] = useState<any[]>([]);
@@ -1171,8 +1139,7 @@ function PrometheusApp() {
         tagline: 'The Creative Genius 🎨',
         provider: 'OpenAI',
         price: 20,
-        originalPrice: null,
-        unit: '/month',
+          unit: '/month',
         image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJiZyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzAwYmZmZjtzdG9wLW9wYWNpdHk6MSIgLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMwMDgwZmY7c3RvcC1vcGFjaXR5OjEiIC8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjYmcpIi8+PHRleHQgeD0iMjAwIiB5PSIyMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI0OCIgZmlsbD0id2hpdGUiPkFJPC90ZXh0Pjwvc3ZnPg==',
         badge: 'Most Popular 🔥',
         badgeColor: 'bg-blue-500',
@@ -1419,23 +1386,23 @@ function PrometheusApp() {
     }
     
     // Apply price range
-    filtered = filtered.filter(product => 
+    filtered = filtered.filter((product: Product) => 
       product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1]
     );
     
     // Apply sources
     if (filters.sources.length > 0) {
-      filtered = filtered.filter(product => filters.sources.includes(product.source));
+      filtered = filtered.filter((product: Product) => product.source && filters.sources.includes(product.source));
     }
     
     // Apply use cases
     if (filters.useCases.length > 0) {
-      filtered = filtered.filter(product => filters.useCases.includes(product.useCase));
+      filtered = filtered.filter((product: Product) => product.useCase && filters.useCases.includes(product.useCase));
     }
     
     // Apply rating
     if (filters.rating > 0) {
-      filtered = filtered.filter(product => product.rating >= filters.rating);
+      filtered = filtered.filter((product: Product) => product.rating >= filters.rating);
     }
     
     return filtered;
@@ -1451,7 +1418,7 @@ function PrometheusApp() {
     let recommendations = [];
     
     // Budget constraints
-    const budgetFilter = (product) => {
+    const budgetFilter = (product: Product) => {
       const budgetValue = budgetAnswer.value || budgetAnswer;
       switch (budgetValue) {
         case '25':
@@ -1556,7 +1523,9 @@ function PrometheusApp() {
     const styleSheet = document.createElement("style");
     styleSheet.textContent = scrollbarHideStyles;
     document.head.appendChild(styleSheet);
-    return () => document.head.removeChild(styleSheet);
+    return () => {
+      document.head.removeChild(styleSheet);
+    };
   }, []);
 
   // Enhanced Neural Background with Full Framer Motion
@@ -2112,7 +2081,7 @@ function PrometheusApp() {
   };
 
   // Product Card Component
-  const ProductCard = ({ product }) => {
+  const ProductCard = ({ product }: { product: Product }) => {
     const { addItem } = useCart();
     const isHovered = hoveredProduct === product.id;
 
@@ -2254,7 +2223,7 @@ function PrometheusApp() {
   };
 
   // Quick View Modal
-  const QuickViewModal = ({ product, onClose }) => {
+  const QuickViewModal = ({ product, onClose }: { product: Product; onClose: () => void }) => {
     const { addItem } = useCart();
     
     if (!product) return null;
@@ -2574,10 +2543,12 @@ function PrometheusApp() {
             <motion.button
               onClick={() => {
                 setFilters({
+                  category: 'all',
                   priceRange: [0, 1000],
                   sources: [],
                   useCases: [],
                   rating: 0,
+                  difficulty: [],
                   searchQuery: ''
                 });
                 setActiveCategory('all');
