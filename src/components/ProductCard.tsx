@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Star, Heart, ShoppingCart, Eye } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../contexts/CartContext';
+import OptimizedImage from './common/OptimizedImage';
 
 interface ProductCardProps {
   product: Product;
@@ -49,25 +50,14 @@ const ProductCard = memo(({ product, onQuickView, onAddToCart }: ProductCardProp
       whileHover={{ y: -2 }}
       className="bg-surface border border-gray-200 rounded-xl p-6 group hover:shadow-lg transition-all duration-200 hover:border-primary-200"
     >
-      {/* Product Image with error handling */}
-      <div className="relative mb-4 overflow-hidden rounded-lg bg-gray-100">
-        {!imageError ? (
-          <img
-            src={product.image}
-            alt={product.name}
-            onError={handleImageError}
-            className="w-full h-48 object-cover group-hover:scale-102 transition-transform duration-200"
-            loading="lazy"
-          />
-        ) : (
-          // Professional fallback with navy trust colors (Labrecque 2020)
-          <img
-            src="/images/fallback.png"
-            alt={`${product.name} - AI Product`}
-            className="w-full h-48 object-cover"
-            loading="lazy"
-          />
-        )}
+      {/* Product Image with optimized loading and AI-themed visuals */}
+      <div className="relative mb-4 overflow-hidden rounded-lg bg-gray-100 group-hover:shadow-lg transition-shadow duration-200">
+        <OptimizedImage
+          productId={product.id.toString()}
+          alt={product.name}
+          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          priority={false}
+        />
         
         {/* Hover actions - minimal and elegant */}
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">

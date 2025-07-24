@@ -20,14 +20,11 @@ interface SidebarProps {
 const Sidebar = memo(({ isOpen, onClose, filters, onFiltersChange, productCount }: SidebarProps) => {
   const location = useLocation();
   
-  // Navigation items (Whop-style for future TikTok addiction prep)
+  // Navigation items (Whop-style with functional features only)
   const navItems = useMemo(() => [
-    { id: 'home', name: 'Home', icon: Home, path: '/', count: null },
-    { id: 'discover', name: 'Discover', icon: Compass, path: '/discover', count: null, isStub: true },
-    { id: 'community', name: 'Community', icon: MessageCircle, path: '/community', count: null, isStub: true },
-    { id: 'notifications', name: 'Notifications', icon: Bell, path: '/notifications', count: 3, isStub: true },
-    { id: 'analytics', name: 'Analytics', icon: BarChart3, path: '/analytics', count: null, isStub: true },
-    { id: 'profile', name: 'Profile', icon: User, path: '/profile', count: null, isStub: true },
+    { id: 'home', name: 'Home', icon: Home, path: '/', count: null, active: true },
+    { id: 'discover', name: 'Discover', icon: Compass, path: '/discover', count: null, active: true, badge: 'New' },
+    { id: 'community', name: 'Community', icon: MessageCircle, path: '/community', count: null, active: true, badge: 'Beta' },
   ], []);
   
   // Memoized filter options for performance
@@ -115,40 +112,48 @@ const Sidebar = memo(({ isOpen, onClose, filters, onFiltersChange, productCount 
               <nav className="space-y-2">
                 {navItems.map((item) => {
                   const isActive = location.pathname === item.path;
-                  const isStub = item.isStub;
                   
-                  const content = (
-                    <div className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
-                      isActive 
-                        ? 'bg-primary/10 text-primary border border-primary/20' 
-                        : isStub
-                        ? 'text-gray-400 cursor-not-allowed'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}>
-                      <div className="flex items-center space-x-3">
-                        <item.icon className="w-5 h-5" />
-                        <span className="font-medium">{item.name}</span>
-                        {isStub && <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">Soon</span>}
-                      </div>
-                      {item.count && (
-                        <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">
-                          {item.count}
-                        </span>
-                      )}
-                    </div>
-                  );
-                  
-                  return isStub ? (
-                    <div key={item.id} title="Coming soon - Phase 2">
-                      {content}
-                    </div>
-                  ) : (
+                  return (
                     <Link key={item.id} to={item.path} onClick={onClose}>
-                      {content}
+                      <div className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
+                        isActive 
+                          ? 'bg-primary/10 text-primary border border-primary/20' 
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}>
+                        <div className="flex items-center space-x-3">
+                          <item.icon className="w-5 h-5" />
+                          <span className="font-medium">{item.name}</span>
+                          {item.badge && (
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                              item.badge === 'New' 
+                                ? 'bg-green-100 text-green-700' 
+                                : 'bg-blue-100 text-blue-700'
+                            }`}>
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
+                        {item.count && (
+                          <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">
+                            {item.count}
+                          </span>
+                        )}
+                      </div>
                     </Link>
                   );
                 })}
               </nav>
+            </div>
+            
+            {/* Feature highlight */}
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <span className="text-sm font-medium text-primary">Live Now</span>
+              </div>
+              <p className="text-xs text-gray-600">
+                {Math.floor(Math.random() * 200) + 300} users discovering AI solutions
+              </p>
             </div>
             
             {/* Divider */}
