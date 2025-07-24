@@ -1,19 +1,21 @@
-import React, { useState, useEffect, createContext, useContext, useRef } from 'react';
+import { useState, useEffect, createContext, useContext, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ShoppingCart, Sparkles, Bot, Zap, Brain, Activity, Star, Heart, Play, ChevronDown, Filter, ArrowRight, Cpu, Layers, Code, Shield, Clock, CheckCircle, TrendingUp, Users, BarChart, X, Menu, ChevronRight, Rocket, DollarSign, Award, CreditCard, Lock } from 'lucide-react';
+import { Search, ShoppingCart, Sparkles, Bot, Zap, Brain, Activity, Star, Heart, Play, ChevronDown, Filter, ArrowRight, Layers, Code, Shield, Clock, CheckCircle, TrendingUp, Users, BarChart, X, Menu, DollarSign, Award, CreditCard, Lock } from 'lucide-react';
 import ReactPlayer from 'react-player';
 import toast, { Toaster } from 'react-hot-toast';
 import Fuse from 'fuse.js';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
+import { Product, CartItem, CartContextType, SEOProps, CheckoutFormProps, FacetedFiltersProps, FilterState } from './types';
+import type { RocketAnimation } from './types';
 
 // Initialize Stripe  
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_demo_key');
 
 // SEO Component
-const SEO = ({ title, description, keywords, image, url }) => {
+const SEO = ({ title, description, keywords, image, url }: SEOProps) => {
   const siteTitle = "Prometheus Automation - AI Marketplace";
   const siteDescription = "Discover AI models, agents, and automations. ChatGPT, Claude, n8n, Zapier and more. Build your AI-powered future.";
   const siteUrl = import.meta.env.VITE_APP_URL || "https://prometheus-automation.com";
@@ -76,21 +78,21 @@ const SEO = ({ title, description, keywords, image, url }) => {
 };
 
 // Enhanced Cart Context with Rocket Animation
-const CartContext = createContext();
+const CartContext = createContext<CartContextType | undefined>(undefined);
 
-function CartProvider({ children }) {
-  const [items, setItems] = useState(() => {
+function CartProvider({ children }: { children: React.ReactNode }) {
+  const [items, setItems] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('cart');
     return saved ? JSON.parse(saved) : [];
   });
-  const [rocketAnimations, setRocketAnimations] = useState([]);
+  const [rocketAnimations, setRocketAnimations] = useState<RocketAnimation[]>([]);
   const [showCheckout, setShowCheckout] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(items));
   }, [items]);
 
-  const addItem = (product) => {
+  const addItem = (product: Product) => {
     setItems(current => {
       const existing = current.find(item => item.product.id === product.id);
       if (existing) {
@@ -121,12 +123,12 @@ function CartProvider({ children }) {
     });
   };
 
-  const removeItem = (productId) => {
+  const removeItem = (productId: string | number) => {
     setItems(current => current.filter(item => item.product.id !== productId));
     toast.success('Item removed from cart');
   };
 
-  const updateQuantity = (productId, quantity) => {
+  const updateQuantity = (productId: string | number, quantity: number) => {
     if (quantity <= 0) {
       removeItem(productId);
       return;
@@ -166,21 +168,21 @@ function CartProvider({ children }) {
   );
 }
 
-function useCart() {
+function useCart(): CartContextType {
   const context = useContext(CartContext);
   if (!context) throw new Error('useCart must be used within CartProvider');
   return context;
 }
 
 // Stripe Payment Form Component
-const CheckoutForm = ({ onSuccess, onCancel }) => {
+const CheckoutForm = ({ onSuccess, onCancel }: CheckoutFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const { items, totalPrice, clearCart } = useCart();
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (!stripe || !elements) {
@@ -192,8 +194,14 @@ const CheckoutForm = ({ onSuccess, onCancel }) => {
 
     const card = elements.getElement(CardElement);
 
+    if (!card) {
+      setError('Card element not found');
+      setProcessing(false);
+      return;
+    }
+
     // Create payment method
-    const { error: paymentError, paymentMethod } = await stripe.createPaymentMethod({
+    const { error: paymentError } = await stripe.createPaymentMethod({
       type: 'card',
       card: card,
       billing_details: {
@@ -202,7 +210,7 @@ const CheckoutForm = ({ onSuccess, onCancel }) => {
     });
 
     if (paymentError) {
-      setError(paymentError.message);
+      setError(paymentError.message || 'Payment failed');
       setProcessing(false);
       return;
     }
@@ -299,7 +307,7 @@ const CheckoutForm = ({ onSuccess, onCancel }) => {
 };
 
 // Checkout Modal Component
-const CheckoutModal = ({ isOpen, onClose }) => {
+const CheckoutModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const handleSuccess = () => {
     onClose();
   };
@@ -345,13 +353,17 @@ const CheckoutModal = ({ isOpen, onClose }) => {
 };
 
 // Enhanced Tooltip Component with Outside Click Handling
-const StatsTooltip = ({ children, content, position = "bottom" }) => {
+const StatsTooltip = ({ children, content, position = "bottom" }: { 
+  children: React.ReactNode; 
+  content: string; 
+  position?: string 
+}) => {
   const [isVisible, setIsVisible] = useState(false);
-  const tooltipRef = useRef(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (isVisible && tooltipRef.current && !tooltipRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isVisible && tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
         setIsVisible(false);
       }
     };
@@ -396,11 +408,11 @@ const StatsTooltip = ({ children, content, position = "bottom" }) => {
 };
 
 // Rocket Animation Component
-const RocketAnimation = ({ rockets }) => {
+const RocketAnimation = ({ rockets }: { rockets: RocketAnimation[] }) => {
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
       <AnimatePresence>
-        {rockets.map((rocket) => (
+        {rockets.map((rocket: RocketAnimation) => (
           <motion.div
             key={rocket.id}
             initial={{ 
@@ -431,7 +443,7 @@ const RocketAnimation = ({ rockets }) => {
 };
 
 // Faceted Filter Component
-const FacetedFilters = ({ filters, setFilters, showFilters, setShowFilters }) => {
+const FacetedFilters = ({ filters, setFilters, showFilters, setShowFilters }: FacetedFiltersProps) => {
   const sources = ['OpenAI', 'Anthropic', 'xAI', 'n8n', 'Zapier', 'Make', 'Python'];
   const useCases = ['productivity', 'sales', 'support', 'content', 'marketing', 'data'];
   
@@ -549,10 +561,12 @@ const FacetedFilters = ({ filters, setFilters, showFilters, setShowFilters }) =>
           <div className="flex justify-between items-center mt-4 pt-4 border-t">
             <button
               onClick={() => setFilters({
+                category: 'all',
                 priceRange: [0, 1000],
                 sources: [],
                 useCases: [],
                 rating: 0,
+                difficulty: [],
                 searchQuery: ''
               })}
               className="text-gray-600 hover:text-gray-800 text-sm"
@@ -1106,13 +1120,15 @@ function PrometheusApp() {
   const [showQuickView, setShowQuickView] = useState(null);
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizStep, setQuizStep] = useState(0);
-  const [quizAnswers, setQuizAnswers] = useState([]);
+  const [quizAnswers, setQuizAnswers] = useState<any[]>([]);
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<FilterState>({
+    category: 'all',
     priceRange: [0, 1000],
     sources: [],
     useCases: [],
     rating: 0,
+    difficulty: [],
     searchQuery: ''
   });
 
@@ -1535,8 +1551,8 @@ function PrometheusApp() {
 
   // Enhanced Neural Background with Full Framer Motion
   const NeuralBackground = () => {
-    const [particles, setParticles] = useState([]);
-    const [connections, setConnections] = useState([]);
+    const [particles, setParticles] = useState<any[]>([]);
+    const [connections, setConnections] = useState<any[]>([]);
     
     useEffect(() => {
       const newParticles = Array.from({ length: 20 }, (_, i) => ({

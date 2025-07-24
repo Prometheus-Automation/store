@@ -113,3 +113,61 @@ export interface CommunityReply {
   upvotes: number;
   createdAt: Date;
 }
+
+// Additional interfaces for App.tsx
+export interface SEOProps {
+  title?: string;
+  description?: string;
+  keywords?: string;
+  image?: string;
+  url?: string;
+}
+
+export interface CartContextType {
+  items: CartItem[];
+  addItem: (product: Product) => void;
+  removeItem: (productId: string | number) => void;
+  updateQuantity: (productId: string | number, quantity: number) => void;
+  clearCart: () => void;
+  totalItems: number;
+  totalPrice: number;
+  rocketAnimations: RocketAnimation[];
+  showCheckout: boolean;
+  setShowCheckout: (show: boolean) => void;
+}
+
+export interface RocketAnimation {
+  id: number;
+  product: Product;
+}
+
+export interface CheckoutFormProps {
+  onSuccess: () => void;
+  onCancel: () => void;
+}
+
+export interface ProductModalProps {
+  product: Product;
+  onClose: () => void;
+}
+
+// Component interfaces for App.tsx
+export interface FacetedFiltersProps {
+  filters: FilterState;
+  setFilters: (filters: FilterState | ((prev: FilterState) => FilterState)) => void;
+  showFilters: boolean;
+  setShowFilters: (show: boolean) => void;
+}
+
+// Vite environment variables
+interface ImportMetaEnv {
+  readonly VITE_STRIPE_PUBLISHABLE_KEY: string;
+  readonly VITE_APP_URL: string;
+  readonly VITE_APP_NAME: string;
+  readonly VITE_SUPABASE_URL: string;
+  readonly VITE_SUPABASE_ANON_KEY: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
