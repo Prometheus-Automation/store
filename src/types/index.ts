@@ -131,15 +131,10 @@ export interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
-  rocketAnimations: RocketAnimation[];
   showCheckout: boolean;
   setShowCheckout: (show: boolean) => void;
 }
 
-export interface RocketAnimation {
-  id: number;
-  product: Product;
-}
 
 export interface CheckoutFormProps {
   onSuccess: () => void;

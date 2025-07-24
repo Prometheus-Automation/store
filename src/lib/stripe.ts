@@ -1,17 +1,9 @@
 import { loadStripe } from '@stripe/stripe-js';
+import { initializeStripe } from '../utils/errorUtils';
 import type { CartItem } from '@/types';
 
-// This would be your publishable key from Stripe
-const getStripeKey = () => {
-  const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-  if (!key) {
-    console.error('VITE_STRIPE_PUBLISHABLE_KEY is not set. Stripe functionality will be disabled.');
-    return null;
-  }
-  return key;
-};
-
-const stripeKey = getStripeKey();
+// Safe Stripe initialization with fallback
+const stripeKey = initializeStripe();
 export const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 // Mock checkout session creation (in production, this would call your backend)

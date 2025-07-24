@@ -1,6 +1,6 @@
 import React, { useState, useMemo, memo } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Brain, Layers, Bot, Zap, Code } from 'lucide-react';
+import { Search, Brain, Layers, Bot, Zap, Code, Filter } from 'lucide-react';
 import Fuse from 'fuse.js';
 import { useCart } from '../contexts/CartContext';
 import { sanitizeSearchQuery } from '../utils/security';
@@ -112,14 +112,16 @@ const HomePage = memo(() => {
             </button>
           </div>
 
-          {/* Mobile sidebar */}
-          <Sidebar
-            isOpen={sidebarOpen}
-            onClose={() => setSidebarOpen(false)}
-            filters={filters}
-            onFiltersChange={setFilters}
-            productCount={filteredProducts.length}
-          />
+          {/* Mobile sidebar - only render on mobile screens */}
+          <div className="lg:hidden">
+            <Sidebar
+              isOpen={sidebarOpen}
+              onClose={() => setSidebarOpen(false)}
+              filters={filters}
+              onFiltersChange={setFilters}
+              productCount={filteredProducts.length}
+            />
+          </div>
 
           {/* Products Grid */}
           <div className="flex-1">

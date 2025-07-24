@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import toast from 'react-hot-toast';
-import { Product, CartItem, CartContextType, RocketAnimation } from '../types';
+import { Product, CartItem, CartContextType } from '../types';
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -9,7 +9,6 @@ function CartProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem('cart');
     return saved ? JSON.parse(saved) : [];
   });
-  const [rocketAnimations, setRocketAnimations] = useState<RocketAnimation[]>([]);
   const [showCheckout, setShowCheckout] = useState(false);
 
   useEffect(() => {
@@ -29,20 +28,13 @@ function CartProvider({ children }: { children: React.ReactNode }) {
       return [...current, { product, quantity: 1 }];
     });
 
-    // Trigger rocket animation
-    const rocketId = Date.now();
-    setRocketAnimations(prev => [...prev, { id: rocketId, product }]);
-    
-    // Remove rocket after animation
-    setTimeout(() => {
-      setRocketAnimations(prev => prev.filter(r => r.id !== rocketId));
-    }, 2000);
-
-    toast.success(`${product.name} added to cart! 🚀`, {
+    // Professional success notification (no gimmicky animations)
+    toast.success(`${product.name} added to cart`, {
       duration: 2000,
       style: {
-        background: '#00bfff',
+        background: '#001f3f', // Navy for trust
         color: 'white',
+        border: '1px solid #334155',
       },
     });
   };
@@ -83,7 +75,6 @@ function CartProvider({ children }: { children: React.ReactNode }) {
       clearCart,
       totalItems, 
       totalPrice,
-      rocketAnimations,
       showCheckout,
       setShowCheckout
     }}>
