@@ -1003,6 +1003,13 @@ function ProductDetailPage() {
                   width="100%"
                   height="100%"
                   controls
+                  config={{
+                    youtube: {
+                      playerVars: {
+                        origin: typeof window !== 'undefined' ? window.location.origin : 'https://store.prometheusautomation.com'
+                      }
+                    }
+                  }}
                 />
               </div>
             )}
@@ -2128,6 +2135,13 @@ function PrometheusApp() {
               muted={true}
               loop={true}
               controls={false}
+              config={{
+                youtube: {
+                  playerVars: {
+                    origin: typeof window !== 'undefined' ? window.location.origin : 'https://store.prometheusautomation.com'
+                  }
+                }
+              }}
             />
           ) : (
             <Link to={`/product/${product.id}`}>
@@ -2272,6 +2286,13 @@ function PrometheusApp() {
                   height="100%"
                   playing={true}
                   controls={true}
+                  config={{
+                    youtube: {
+                      playerVars: {
+                        origin: typeof window !== 'undefined' ? window.location.origin : 'https://store.prometheusautomation.com'
+                      }
+                    }
+                  }}
                 />
               ) : (
                 <img
