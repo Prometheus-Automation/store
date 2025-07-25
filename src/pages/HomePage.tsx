@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Search, Brain, Layers, Bot, Zap, Code, Filter } from 'lucide-react';
 import Fuse from 'fuse.js';
 import { useCart } from '../contexts/CartContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { sanitizeSearchQuery } from '../utils/security';
 import { debounce } from 'lodash';
 import ProductCard from '../components/ProductCard';
@@ -11,7 +12,6 @@ import Sidebar from '../components/organisms/Sidebar';
 import Hero from '../components/organisms/Hero';
 import BestSellers from '../components/home/BestSellers';
 import FlashDeals from '../components/home/FlashDeals';
-import ActivityTicker from '../components/common/ActivityTicker';
 import SEO from '../components/SEO';
 import { allProducts } from '../data/products';
 import type { Product, FilterState } from '../types';
@@ -23,6 +23,8 @@ import type { Product, FilterState } from '../types';
  */
 const HomePage = memo(() => {
   const { addItem } = useCart();
+  const { theme } = useTheme();
+  const darkMode = theme === 'dark';
   
   // State management - minimal for performance
   const [filters, setFilters] = useState<FilterState>({
@@ -102,7 +104,9 @@ const HomePage = memo(() => {
   ];
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className={`min-h-screen ${
+      darkMode ? 'bg-cosmic-bg' : 'bg-gray-50'
+    }`}>
       <SEO 
         title="AI Marketplace - Discover AI That Transforms Your Workflow"
         description="Professional AI solutions trusted by industry leaders. From intelligent automation to advanced models—built for results."
@@ -110,19 +114,17 @@ const HomePage = memo(() => {
       />
       
       {/* Hero Section */}
-      <Hero />
+      <Hero darkMode={darkMode} />
       
-      {/* Live Activity Ticker - Social Proof */}
-      <ActivityTicker />
       
       {/* Flash Deals - Urgency and FOMO */}
-      <FlashDeals />
+      <FlashDeals darkMode={darkMode} />
       
       {/* Best Sellers - Social Proof and Trust */}
-      <BestSellers />
+      <BestSellers darkMode={darkMode} />
       
       {/* Main Content - Amazon-style layout */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-6">
         <div className="flex gap-8">
           {/* Sidebar - Persistent on desktop, collapsible on mobile */}
           <div className="hidden lg:block w-80 flex-shrink-0">
@@ -133,6 +135,7 @@ const HomePage = memo(() => {
                 filters={filters}
                 onFiltersChange={setFilters}
                 productCount={filteredProducts.length}
+                darkMode={darkMode}
               />
             </div>
           </div>
@@ -141,7 +144,11 @@ const HomePage = memo(() => {
           <div className="lg:hidden mb-6">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="flex items-center space-x-2 px-4 py-3 bg-white border-2 border-gray-200 rounded-lg font-medium text-gray-700 hover:border-primary hover:text-primary transition-all"
+              className={`flex items-center space-x-2 px-4 py-3 border-2 rounded-lg font-medium transition-all ${
+                darkMode 
+                  ? 'bg-neural-navy/70 border-gray-600 text-gray-200 hover:border-energy-cyan hover:text-cosmic-white' 
+                  : 'bg-white border-gray-200 text-gray-700 hover:border-primary hover:text-primary'
+              }`}
             >
               <Filter className="w-5 h-5" />
               <span>Filters</span>
@@ -156,6 +163,7 @@ const HomePage = memo(() => {
               filters={filters}
               onFiltersChange={setFilters}
               productCount={filteredProducts.length}
+              darkMode={darkMode}
             />
           </div>
 
@@ -169,8 +177,10 @@ const HomePage = memo(() => {
                   onClick={() => setFilters(prev => ({ ...prev, category: category.id }))}
                   className={`flex items-center space-x-2 px-6 py-3 rounded-full font-semibold transition-all shadow-sm ${
                     filters.category === category.id
-                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md transform scale-105'
-                      : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-purple-200 hover:text-purple-600 hover:shadow-md'
+                      ? 'bg-gradient-to-r from-energy-cyan to-energy-purple text-white shadow-md transform scale-105'
+                      : darkMode
+                        ? 'bg-neural-navy/70 border-2 border-gray-600 text-gray-200 hover:border-energy-cyan hover:text-cosmic-white hover:shadow-md'
+                        : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-purple-200 hover:text-purple-600 hover:shadow-md'
                   }`}
                 >
                   <category.icon className="w-5 h-5" />
@@ -180,20 +190,23 @@ const HomePage = memo(() => {
             </div>
 
             {/* Results count with better visibility */}
-            <div className="mb-6">
-              <p className="text-gray-700 font-medium text-lg">
+            <div className="mb-4">
+              <p className={`font-medium text-lg ${
+                darkMode ? 'text-gray-200' : 'text-gray-700'
+              }`}>
                 {filteredProducts.length} {filteredProducts.length === 1 ? 'result' : 'results'} found
               </p>
             </div>
 
             {/* Products Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
                   onQuickView={setShowQuickView}
                   onAddToCart={() => addItem(product)}
+                  darkMode={darkMode}
                 />
               ))}
             </div>
@@ -201,11 +214,19 @@ const HomePage = memo(() => {
             {/* Empty state */}
             {filteredProducts.length === 0 && (
               <div className="text-center py-20">
-                <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Search className="w-8 h-8 text-gray-400" />
+                <div className={`w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center ${
+                  darkMode ? 'bg-neural-navy/50' : 'bg-gray-100'
+                }`}>
+                  <Search className={`w-8 h-8 ${
+                    darkMode ? 'text-gray-400' : 'text-gray-400'
+                  }`} />
                 </div>
-                <h3 className="text-xl font-semibold text-navy-900 mb-2">No results found</h3>
-                <p className="text-gray-600 mb-6">Try adjusting your search or filters</p>
+                <h3 className={`text-xl font-semibold mb-2 ${
+                  darkMode ? 'text-cosmic-white' : 'text-navy-900'
+                }`}>No results found</h3>
+                <p className={`mb-6 ${
+                  darkMode ? 'text-gray-300' : 'text-gray-600'
+                }`}>Try adjusting your search or filters</p>
                 <button
                   onClick={() => setFilters({
                     category: 'all',
@@ -216,7 +237,7 @@ const HomePage = memo(() => {
                     difficulty: [],
                     searchQuery: ''
                   })}
-                  className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                  className="bg-gradient-to-r from-energy-cyan to-energy-purple hover:from-energy-cyan/80 hover:to-energy-purple/80 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   Clear All Filters
                 </button>

@@ -21,14 +21,14 @@ export default function NeuralBackground() {
   const [connections, setConnections] = useState<Connection[]>([]);
 
   useEffect(() => {
-    // Generate particles
-    const newParticles = Array.from({ length: 20 }, (_, i) => ({
+    // Generate particles - fewer for subtlety
+    const newParticles = Array.from({ length: 12 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: Math.random() * 4 + 2,
-      duration: Math.random() * 15 + 10,
-      delay: Math.random() * 5
+      size: Math.random() * 2 + 1, // Smaller particles
+      duration: Math.random() * 20 + 15, // Slower animation
+      delay: Math.random() * 10
     }));
 
     // Generate connections between nearby particles
@@ -39,11 +39,11 @@ export default function NeuralBackground() {
         const dy = newParticles[i].y - newParticles[j].y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        if (distance < 25) { // Only connect nearby particles
+        if (distance < 30) { // Connect slightly more particles
           newConnections.push({
             from: i,
             to: j,
-            opacity: Math.max(0.1, 0.4 - distance / 60)
+            opacity: Math.max(0.05, 0.2 - distance / 80) // Much more subtle
           });
         }
       }
@@ -58,8 +58,8 @@ export default function NeuralBackground() {
     animate: (particle: Particle) => ({
       x: [particle.x + '%', (particle.x + 10) + '%', particle.x + '%'],
       y: [particle.y + '%', (particle.y - 15) + '%', particle.y + '%'],
-      scale: [1, 1.2, 1],
-      opacity: [0.3, 0.8, 0.3],
+      scale: [1, 1.1, 1],
+      opacity: [0.1, 0.3, 0.1], // Much more subtle
       transition: {
         duration: particle.duration,
         delay: particle.delay,
@@ -72,9 +72,9 @@ export default function NeuralBackground() {
   // Connection animation variants
   const connectionVariants = {
     animate: {
-      opacity: [0.1, 0.4, 0.1],
+      opacity: [0.05, 0.15, 0.05], // Much more subtle
       transition: {
-        duration: 8,
+        duration: 12, // Slower
         repeat: Infinity,
         ease: "easeInOut"
       }

@@ -14,12 +14,16 @@ interface FlashDeal {
   timeLeft: number; // in seconds
 }
 
+interface FlashDealsProps {
+  darkMode?: boolean;
+}
+
 /**
  * FlashDeals - Premium limited-time offers section
  * Minimal design with subtle urgency and elegant typography
  * Navy/blue color scheme for trust and professionalism
  */
-const FlashDeals = memo(() => {
+const FlashDeals = memo(({ darkMode = false }: FlashDealsProps) => {
   const { addItem } = useCart();
   
   // Create flash deals from products
@@ -62,19 +66,25 @@ const FlashDeals = memo(() => {
   };
 
   return (
-    <section className="py-16 bg-gray-50 border-t border-gray-200">
+    <section className={`py-6 backdrop-blur-sm border-t ${
+      darkMode 
+        ? 'bg-neural-navy/60 border-gray-600/30' 
+        : 'bg-gray-100/90 border-gray-300/50'
+    }`}>
       <div className="max-w-7xl mx-auto px-6">
         {/* Section Header - Clean and professional */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-6">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-              <Tag className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-gradient-to-r from-energy-cyan to-energy-purple rounded-lg flex items-center justify-center shadow-lg animate-cosmic-glow">
+              <Tag className="w-5 h-5 text-cosmic-white" />
             </div>
-            <h2 className="text-3xl font-bold text-navy">
+            <h2 className="text-3xl font-bold bg-inviting-gradient bg-clip-text text-transparent text-shadow-glow-sharp antialiased backface-hidden">
               Limited Time Offers
             </h2>
           </div>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className={`max-w-2xl mx-auto ${
+            darkMode ? 'text-gray-300' : 'text-gray-600'
+          }`}>
             Special pricing on premium AI solutions. Professional-grade tools at exclusive rates.
           </p>
         </div>
@@ -87,12 +97,16 @@ const FlashDeals = memo(() => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-xl border border-gray-200 hover:border-primary hover:shadow-lg transition-all group"
+              className={`rounded-xl border hover:border-energy-cyan hover:shadow-lg transition-all group backdrop-blur-sm ${
+                darkMode 
+                  ? 'bg-neural-navy/70 border-gray-600/30' 
+                  : 'bg-neural-navy/70 border-gray-600/30'
+              }`}
             >
-              {/* Discount Badge */}
+              {/* Cosmic Discount Badge */}
               <div className="relative">
                 <div className="absolute top-4 left-4 z-10">
-                  <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-lg text-sm font-semibold shadow-sm">
+                  <div className="bg-gradient-to-r from-energy-cyan to-energy-purple text-cosmic-white px-3 py-1 rounded-lg text-sm font-semibold shadow-sm animate-cosmic-glow">
                     {deal.discount}% off
                   </div>
                 </div>
@@ -109,42 +123,52 @@ const FlashDeals = memo(() => {
 
               {/* Product Info */}
               <div className="p-6 space-y-4">
-                <h3 className="font-semibold text-lg text-navy leading-tight">
+                <h3 className={`font-semibold text-lg leading-tight ${
+                  darkMode ? 'text-cosmic-white' : 'text-cosmic-white'
+                }`}>
                   {deal.product.name}
                 </h3>
 
-                {/* Price */}
+                {/* Cosmic Price */}
                 <div className="flex items-baseline space-x-3">
-                  <span className="text-2xl font-bold text-blue-600">
+                  <span className="text-2xl font-bold bg-gradient-to-r from-energy-cyan to-node-teal bg-clip-text text-transparent">
                     ${deal.salePrice}
                   </span>
-                  <span className="text-gray-500 line-through">
+                  <span className={`line-through ${
+                    darkMode ? 'text-gray-400' : 'text-gray-400'
+                  }`}>
                     ${Math.round(deal.originalPrice)}
                   </span>
-                  <span className="bg-gradient-to-r from-green-50 to-blue-50 text-green-700 px-2 py-1 rounded text-sm font-medium border border-green-200">
-                    Save ${Math.round(deal.originalPrice - deal.salePrice)}
+                  <span className="bg-gradient-to-r from-node-teal/20 to-energy-cyan/20 text-node-teal px-2 py-1 rounded text-sm font-medium border border-node-teal/30">
+                    Save {deal.discount}%
                   </span>
                 </div>
 
-                {/* Timer */}
-                <div className="bg-gray-50 rounded-lg p-3 border">
+                {/* Cosmic Timer */}
+                <div className={`rounded-lg p-3 border backdrop-blur-sm ${
+                  darkMode 
+                    ? 'bg-neural-navy/80 border-gray-600/30' 
+                    : 'bg-neural-navy/80 border-gray-600/30'
+                }`}>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2 text-sm text-gray-600">
-                      <Clock className="w-4 h-4" />
+                    <div className={`flex items-center space-x-2 text-sm ${
+                      darkMode ? 'text-gray-300' : 'text-gray-300'
+                    }`}>
+                      <Clock className="w-4 h-4 text-energy-cyan" />
                       <span>Offer expires in:</span>
                     </div>
-                    <div className="font-mono font-semibold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    <div className="font-mono font-semibold bg-gradient-to-r from-energy-cyan to-energy-purple bg-clip-text text-transparent">
                       {formatTime(deal.timeLeft)}
                     </div>
                   </div>
                 </div>
 
-                {/* CTA Button */}
+                {/* Cosmic CTA Button */}
                 <motion.button
                   onClick={() => handlePurchase(deal)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-3 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 shadow-sm hover:shadow-md"
+                  className="w-full bg-gradient-to-r from-energy-cyan to-energy-purple hover:from-energy-cyan/80 hover:to-energy-purple/80 text-white py-3 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 shadow-sm hover:shadow-md animate-cosmic-glow"
                 >
                   <ShoppingCart className="w-4 h-4" />
                   <span>Add to Cart</span>
@@ -154,12 +178,6 @@ const FlashDeals = memo(() => {
           ))}
         </div>
 
-        {/* Bottom message */}
-        <div className="text-center mt-12">
-          <p className="text-gray-600">
-            Limited quantities available. <span className="font-semibold text-navy">Professional pricing</span> for verified users.
-          </p>
-        </div>
       </div>
     </section>
   );

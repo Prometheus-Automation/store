@@ -1,36 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
+import { Sun, Moon } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 import Header from './Header';
 import Footer from './Footer';
+import VideoBackground from '../common/VideoBackground';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
-  // Dark mode state (Musk-level intelligence signaling)
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('darkMode') === 'true';
-    }
-    return false;
-  });
-
-  // Apply dark mode class to document
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('darkMode', darkMode.toString());
-  }, [darkMode]);
-
-  const toggleDarkMode = () => setDarkMode(!darkMode);
+  const { theme, toggleTheme } = useTheme();
+  const darkMode = theme === 'dark';
 
   return (
-    <div className="min-h-screen flex flex-col relative bg-bg text-navy dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200">
-      <Header />
+    <div className={`min-h-screen flex flex-col relative ${darkMode ? 'bg-cosmic-gradient' : 'bg-gray-50'}`}>
+      {darkMode && <VideoBackground />}
+      
+      <Header darkMode={darkMode} toggleTheme={toggleTheme} />
       
       <motion.main
         initial={{ opacity: 0 }}
@@ -41,7 +29,7 @@ export default function Layout({ children }: LayoutProps) {
         {children}
       </motion.main>
       
-      <Footer />
+      <Footer darkMode={darkMode} />
     </div>
   );
 }

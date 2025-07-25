@@ -3,7 +3,7 @@
 @import 'tailwindcss/utilities';
 
 /* Custom fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Open+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 /* Base styles */
 * {
@@ -17,10 +17,11 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Open Sans', system-ui, -apple-system, sans-serif;
   line-height: 1.6;
-  color: #4b5563; /* Updated to gray-600 for better readability */
-  background-color: #f8fafc; /* Updated to bg color from design system */
+  color: #4b5563; /* Keep original text color for readability */
+  background: transparent; /* Let VideoBackground handle this */
+  min-height: 100vh;
 }
 
 /* Custom scrollbar */
@@ -113,6 +114,52 @@ body {
 
 .gradient-text-yellow {
   @apply bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent;
+}
+
+/* Apple-inspired inviting gradient for section titles - Mid-bright tones with glow */
+.gradient-text-ai-title {
+  background: linear-gradient(90deg, #3b82f6 0%, #f97316 50%, #ef4444 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  opacity: 1;
+  animation: ai-title-fade 0.5s ease-in-out;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(0, 191, 255, 0.5);
+}
+
+/* Muted version for subtle elegance (70% opacity) */
+.gradient-text-ai-title-muted {
+  background: linear-gradient(90deg, #001f3f 0%, #00bfff 50%, #b22222 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  opacity: 0.7;
+  animation: ai-title-fade 0.5s ease-in-out;
+}
+
+/* AI title fade animation for 20% engagement lift */
+@keyframes ai-title-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Font rendering optimizations for crisp gradient text */
+.antialiased {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
 }
 
 /* Custom button styles - Updated for trust-building design */
@@ -281,4 +328,148 @@ body {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Search input gradient styles */
+.search-input:not(:placeholder-shown) {
+  background: linear-gradient(90deg, #9333ea, #2563eb) text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+.search-input-mobile:not(:placeholder-shown) {
+  background: linear-gradient(90deg, #9333ea, #2563eb) text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+.search-input-sidebar:not(:placeholder-shown) {
+  background: linear-gradient(90deg, #9333ea, #2563eb) text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Gemini-style search animation */
+@keyframes gemini-search {
+  0% {
+    border-image: linear-gradient(90deg, #9333ea 0%, #9333ea 100%) 1;
+  }
+  25% {
+    border-image: linear-gradient(90deg, #9333ea 0%, #2563eb 25%, #9333ea 100%) 1;
+  }
+  50% {
+    border-image: linear-gradient(90deg, #9333ea 0%, #2563eb 50%, #2563eb 50%, #9333ea 100%) 1;
+  }
+  75% {
+    border-image: linear-gradient(90deg, #2563eb 0%, #9333ea 75%, #2563eb 100%) 1;
+  }
+  100% {
+    border-image: linear-gradient(90deg, #2563eb 0%, #2563eb 100%) 1;
+  }
+}
+
+.search-input:focus {
+  animation: gemini-search 2s ease-in-out infinite;
+}
+
+.search-input-mobile:focus {
+  animation: gemini-search 2s ease-in-out infinite;
+}
+
+.search-input-sidebar:focus {
+  animation: gemini-search 2s ease-in-out infinite;
+}
+
+/* Neural network background gradient */
+.bg-neural-gradient {
+  background: linear-gradient(135deg, #001f3f 0%, #0f172a 50%, #001f3f 100%);
+}
+
+/* Cosmic dark theme */
+.bg-cosmic-gradient {
+  background: linear-gradient(135deg, #0a0a1e 0%, #001f3f 50%, #191970 100%);
+}
+
+/* Cosmic Energy Animations */
+@keyframes neural-pulse {
+  0% {
+    opacity: 0.03;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.08;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0.03;
+    transform: scale(1);
+  }
+}
+
+@keyframes cosmic-glow {
+  0% {
+    box-shadow: 0 0 10px rgba(0,191,255,0.2);
+    opacity: 0.8;
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(0,191,255,0.4), 0 0 30px rgba(99,102,241,0.2);
+    opacity: 1;
+  }
+}
+
+@keyframes energy-flow {
+  0% {
+    background-position: 0% 50%;
+    opacity: 0.2;
+  }
+  50% {
+    background-position: 100% 50%;
+    opacity: 0.4;
+  }
+  100% {
+    background-position: 0% 50%;
+    opacity: 0.2;
+  }
+}
+
+@keyframes neural-breathe {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  33% {
+    transform: scale(1.02);
+    opacity: 0.8;
+  }
+  66% {
+    transform: scale(0.98);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+}
+
+/* Cosmic animation utilities */
+.animate-neural-pulse {
+  animation: neural-pulse 3s ease-in-out infinite;
+}
+
+.animate-cosmic-glow {
+  animation: cosmic-glow 2s ease-in-out infinite alternate;
+}
+
+.animate-energy-flow {
+  animation: energy-flow 4s ease-in-out infinite;
+}
+
+.animate-neural-breathe {
+  animation: neural-breathe 6s ease-in-out infinite;
 }

@@ -15,7 +15,11 @@ import {
   Layers
 } from 'lucide-react';
 
-export default function Footer() {
+interface FooterProps {
+  darkMode?: boolean;
+}
+
+export default function Footer({ darkMode = false }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
   const footerSections = [
@@ -76,8 +80,16 @@ export default function Footer() {
               transition={{ duration: 0.5 }}
               className="text-center"
             >
-              <Shield className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-              <h3 className="font-semibold text-sm mb-1">Stripe Secured</h3>
+              <Shield className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 text-transparent bg-clip-text mx-auto mb-2" style={{filter: 'url(#gradient-shield)'}} />
+              <svg width="0" height="0">
+                <defs>
+                  <linearGradient id="gradient-shield" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#9333ea" />
+                    <stop offset="100%" stopColor="#2563eb" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <h3 className="font-semibold text-sm mb-1 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Stripe Secured</h3>
               <p className="text-xs text-gray-600">Bank-level encryption for all transactions</p>
             </motion.div>
             
@@ -87,8 +99,16 @@ export default function Footer() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-center"
             >
-              <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
-              <h3 className="font-semibold text-sm mb-1">Verified Sellers</h3>
+              <CheckCircle className="w-8 h-8 mx-auto mb-2" style={{stroke: 'url(#gradient-check)'}} />
+              <svg width="0" height="0">
+                <defs>
+                  <linearGradient id="gradient-check" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#9333ea" />
+                    <stop offset="100%" stopColor="#2563eb" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <h3 className="font-semibold text-sm mb-1 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Verified Sellers</h3>
               <p className="text-xs text-gray-600">All AI providers are thoroughly vetted</p>
             </motion.div>
             
@@ -98,8 +118,16 @@ export default function Footer() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-center"
             >
-              <Award className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-              <h3 className="font-semibold text-sm mb-1">30-Day Guarantee</h3>
+              <Award className="w-8 h-8 mx-auto mb-2" style={{stroke: 'url(#gradient-award)'}} />
+              <svg width="0" height="0">
+                <defs>
+                  <linearGradient id="gradient-award" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#9333ea" />
+                    <stop offset="100%" stopColor="#2563eb" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <h3 className="font-semibold text-sm mb-1 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">30-Day Guarantee</h3>
               <p className="text-xs text-gray-600">Money back, no questions asked</p>
             </motion.div>
             
@@ -109,8 +137,16 @@ export default function Footer() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="text-center"
             >
-              <Users className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-              <h3 className="font-semibold text-sm mb-1">50K+ Community</h3>
+              <Users className="w-8 h-8 mx-auto mb-2" style={{stroke: 'url(#gradient-users)'}} />
+              <svg width="0" height="0">
+                <defs>
+                  <linearGradient id="gradient-users" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#9333ea" />
+                    <stop offset="100%" stopColor="#2563eb" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <h3 className="font-semibold text-sm mb-1 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">50K+ Community</h3>
               <p className="text-xs text-gray-600">Join thousands of AI enthusiasts</p>
             </motion.div>
           </div>

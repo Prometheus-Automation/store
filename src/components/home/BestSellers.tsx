@@ -6,12 +6,16 @@ import ProductCard from '../ProductCard';
 import { allProducts } from '../../data/products';
 import type { Product } from '../../types';
 
+interface BestSellersProps {
+  darkMode?: boolean;
+}
+
 /**
  * BestSellers - Premium AI marketplace bestsellers section
  * Minimalist design with subtle trust signals for premium feel
  * Navy color scheme aligned with AI Amazon aesthetic
  */
-const BestSellers = memo(() => {
+const BestSellers = memo(({ darkMode = false }: BestSellersProps) => {
   // Get bestseller products (highest rated with most reviews)
   const bestSellers = allProducts
     .filter(product => product.rating >= 4.7 && product.reviews > 1000)
@@ -19,19 +23,26 @@ const BestSellers = memo(() => {
     .slice(0, 4);
 
   return (
-    <section className="py-16 bg-white border-t border-gray-100">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="py-6 relative">
+      {/* Nebula overlay background */}
+      <div className="relative bg-gradient-to-r from-[#0a0a1e] to-[#191970] bg-opacity-10 rounded-lg p-6">
+        {/* Nebula background image - your custom image */}
+        <div className="absolute inset-0 bg-[url('/nebula-red.png')] bg-cover bg-center opacity-30 filter blur-[1px] pointer-events-none"></div>
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-6">
         {/* Section Header - Clean and minimal */}
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-gradient-to-r from-energy-cyan to-energy-purple rounded-lg flex items-center justify-center shadow-lg">
               <Award className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-navy">
+              <h2 className="relative z-10 text-3xl font-bold bg-inviting-gradient bg-clip-text text-transparent text-shadow-glow-sharp antialiased backface-hidden">
                 Best Sellers
               </h2>
-              <p className="text-gray-600 text-sm">
+              <p className={`text-sm ${
+                darkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}>
                 Most trusted by professionals
               </p>
             </div>
@@ -39,7 +50,11 @@ const BestSellers = memo(() => {
 
           <Link 
             to="/bestsellers" 
-            className="flex items-center space-x-2 text-primary hover:text-navy font-semibold transition-colors group"
+            className={`flex items-center space-x-2 font-semibold transition-colors group ${
+              darkMode 
+                ? 'text-energy-cyan hover:text-cosmic-white' 
+                : 'text-primary hover:text-navy'
+            }`}
           >
             <span>View All</span>
             <TrendingUp className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -47,15 +62,27 @@ const BestSellers = memo(() => {
         </div>
 
         {/* Subtle trust indicator */}
-        <div className="mb-8 bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <div className="flex items-center justify-center space-x-6 text-sm text-gray-600">
+        <div className={`mb-8 border rounded-lg p-4 ${
+          darkMode 
+            ? 'bg-neural-navy/30 border-gray-600/30' 
+            : 'bg-gray-50 border-gray-200'
+        }`}>
+          <div className={`flex items-center justify-center space-x-6 text-sm ${
+            darkMode ? 'text-gray-300' : 'text-gray-600'
+          }`}>
             <div className="flex items-center space-x-2">
-              <Users className="w-4 h-4 text-primary" />
+              <Users className={`w-4 h-4 ${
+                darkMode ? 'text-energy-cyan' : 'text-primary'
+              }`} />
               <span>
-                <span className="font-semibold text-navy">12,000+</span> active users
+                <span className={`font-semibold ${
+                  darkMode ? 'text-cosmic-white' : 'text-navy'
+                }`}>12,000+</span> active users
               </span>
             </div>
-            <div className="w-px h-4 bg-gray-300" />
+            <div className={`w-px h-4 ${
+              darkMode ? 'bg-gray-600' : 'bg-gray-300'
+            }`} />
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full" />
               <span>Verified ratings from real customers</span>
@@ -64,7 +91,7 @@ const BestSellers = memo(() => {
         </div>
 
         {/* Bestseller Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {bestSellers.map((product, index) => (
             <motion.div
               key={product.id}
@@ -75,29 +102,20 @@ const BestSellers = memo(() => {
             >
               {/* Minimal bestseller indicator */}
               <div className="absolute -top-2 -right-2 z-20">
-                <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
+                <div className="bg-gradient-to-r from-energy-cyan to-energy-purple text-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
                   #{index + 1}
                 </div>
               </div>
 
               {/* Clean Product Card */}
               <div className="bg-white rounded-xl border border-gray-200 hover:border-purple-200 hover:shadow-lg transition-all">
-                <ProductCard product={product} />
+                <ProductCard product={product} darkMode={darkMode} />
               </div>
 
-              {/* Subtle sales indicator */}
-              <div className="mt-3 text-center text-sm text-gray-600">
-                <span className="font-medium text-blue-600">{product.reviews}</span> verified reviews
-              </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Minimal social proof */}
-        <div className="mt-12 text-center">
-          <p className="text-gray-600">
-            Trusted by <span className="font-semibold text-navy">industry leaders</span> worldwide
-          </p>
         </div>
       </div>
     </section>
