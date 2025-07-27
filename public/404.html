@@ -4,33 +4,15 @@
     <meta charset="utf-8">
     <title>Prometheus Automation</title>
     <script type="text/javascript">
-      // Single Page Apps for GitHub Pages / Custom Domain
-      // MIT License - Modified for /store/ subdirectory
+      // Single Page Apps for GitHub Pages
       // https://github.com/rafgraph/spa-github-pages
-      var pathSegmentsToKeep = 1;
+      // Start single page apps at the root
       var l = window.location;
       
-      // Handle custom domain with /store/ subdirectory
-      if (l.hostname === 'www.prometheusautomation.com' || l.hostname === 'prometheusautomation.com') {
-        // For custom domain, redirect to /store/ if not already there
-        if (!l.pathname.startsWith('/store/')) {
-          l.replace(l.protocol + '//' + l.hostname + '/store/');
-        } else {
-          // Handle SPA routing within /store/
-          var storePath = l.pathname.slice('/store'.length);
-          if (storePath && storePath !== '/') {
-            l.replace(l.protocol + '//' + l.hostname + '/store/?/' + storePath.slice(1).replace(/&/g, '~and~') + (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') + l.hash);
-          }
-        }
-      } else {
-        // Original GitHub Pages logic
-        l.replace(
-          l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-          l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-          l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-          (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-          l.hash
-        );
+      // Only redirect if we're on a 404 page and not already redirected
+      if (l.search && l.search.indexOf('?/') === 0) {
+        var decoded = l.search.slice(1).replace(/&/g, '?').replace(/~and~/g, '&');
+        l.replace(l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') + decoded + l.hash);
       }
     </script>
   </head>
