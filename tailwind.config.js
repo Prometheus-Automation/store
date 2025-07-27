@@ -67,8 +67,8 @@ export default {
         // Nebula overlay for Best Sellers section
         'nebula-overlay': "url('/nebula-red.png')",
         
-        // Smooth inviting gradient using website's cyan-purple-teal palette
-        'inviting-gradient': 'linear-gradient(90deg, #00bfff 0%, #6366f1 40%, #8b5cf6 70%, #00ffaa 100%)',
+        // Smooth inviting gradient with more vibrant purple in middle
+        'inviting-gradient': 'linear-gradient(90deg, #00bfff 0%, #7c3aed 40%, #8b5cf6 70%, #00ffaa 100%)',
       },
       // Neural energy animations - Cosmic pulse effects
       animation: {

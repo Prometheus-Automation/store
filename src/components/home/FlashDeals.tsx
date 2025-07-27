@@ -69,7 +69,7 @@ const FlashDeals = memo(({ darkMode = false }: FlashDealsProps) => {
     <section className={`py-6 backdrop-blur-sm border-t ${
       darkMode 
         ? 'bg-neural-navy/60 border-gray-600/30' 
-        : 'bg-gray-100/90 border-gray-300/50'
+        : 'bg-gray-200/80 border-gray-400/50'
     }`}>
       <div className="max-w-7xl mx-auto px-6">
         {/* Section Header - Clean and professional */}

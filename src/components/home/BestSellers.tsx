@@ -24,10 +24,10 @@ const BestSellers = memo(({ darkMode = false }: BestSellersProps) => {
 
   return (
     <section className="py-6 relative">
-      {/* Nebula overlay background */}
-      <div className="relative bg-gradient-to-r from-[#0a0a1e] to-[#191970] bg-opacity-10 rounded-lg p-6">
-        {/* Nebula background image - your custom image */}
-        <div className="absolute inset-0 bg-[url('/nebula-red.png')] bg-cover bg-center opacity-30 filter blur-[1px] pointer-events-none"></div>
+      {/* Nebula overlay background with edge blending */}
+      <div className="relative bg-gradient-to-r from-[#0a0a1e] to-[#191970] bg-opacity-10 rounded-lg p-6 before:absolute before:inset-0 before:bg-gradient-to-t before:from-transparent before:via-transparent before:to-white/10 before:pointer-events-none before:z-10 after:absolute after:inset-0 after:bg-gradient-to-b after:from-transparent after:via-transparent after:to-white/10 after:pointer-events-none after:z-10">
+        {/* Nebula background image with enhanced blur and edge fade */}
+        <div className="absolute inset-0 bg-[url('/nebula-red.png')] bg-cover bg-center opacity-30 filter blur-[2px] pointer-events-none mask-gradient"></div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-6">
         {/* Section Header - Clean and minimal */}
@@ -40,9 +40,7 @@ const BestSellers = memo(({ darkMode = false }: BestSellersProps) => {
               <h2 className="relative z-10 text-3xl font-bold bg-inviting-gradient bg-clip-text text-transparent text-shadow-glow-sharp antialiased backface-hidden">
                 Best Sellers
               </h2>
-              <p className={`text-sm ${
-                darkMode ? 'text-gray-300' : 'text-gray-600'
-              }`}>
+              <p className="text-sm text-white">
                 Most trusted by professionals
               </p>
             </div>

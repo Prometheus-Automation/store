@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "fetch-secrets": "bash scripts/fetch-secrets.sh",
+    "list-secrets": "bash scripts/list-secrets.sh",
+    "test-oauth": "vite --open /test-oauth"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^2.4.0",

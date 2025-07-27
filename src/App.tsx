@@ -6,6 +6,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { stripePromise } from './lib/stripe';
 import AppRouter from './router/AppRouter';
 import ErrorBoundary from './components/common/ErrorBoundary';
@@ -38,16 +39,17 @@ function App() {
           <HelmetProvider>
             <Router>
               <Elements stripe={stripePromise}>
-                <CartProvider>
-                  <Layout>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <AppRouter />
-                    </Suspense>
+                <AuthProvider>
+                  <CartProvider>
+                    <Layout>
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <AppRouter />
+                      </Suspense>
+                      
+                    </Layout>
                     
-                  </Layout>
-                  
-                  {/* Enhanced toast notifications with navy trust colors */}
-                  <Toaster
+                    {/* Enhanced toast notifications with navy trust colors */}
+                    <Toaster
                     position="top-right"
                     toastOptions={{
                       duration: 4000,
@@ -74,7 +76,8 @@ function App() {
                       },
                     }}
                   />
-                </CartProvider>
+                  </CartProvider>
+                </AuthProvider>
               </Elements>
             </Router>
           </HelmetProvider>

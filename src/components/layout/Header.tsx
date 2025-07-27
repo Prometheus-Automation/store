@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Menu, X, Brain, Search, Sun, Moon } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
+import { useAuth } from '../../contexts/AuthContext';
+import UserMenu from '../auth/UserMenu';
+import LoginButton from '../auth/LoginButton';
 
 interface HeaderProps {
   darkMode?: boolean;
@@ -18,6 +21,7 @@ const Header = memo(({ darkMode = false, toggleTheme }: HeaderProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { items, setShowCheckout } = useCart();
+  const { isAuthenticated } = useAuth();
 
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
 
@@ -151,10 +155,25 @@ const Header = memo(({ darkMode = false, toggleTheme }: HeaderProps) => {
               )}
             </button>
 
-            {/* Sign In - Professional CTA */}
-            <button className="hidden md:block bg-gradient-to-r from-energy-cyan to-energy-purple hover:from-energy-cyan/80 hover:to-energy-purple/80 text-white px-6 py-3 rounded-full font-semibold transition-all shadow-sm hover:shadow-md">
-              Sign In
-            </button>
+            {/* Authentication */}
+            {isAuthenticated ? (
+              <UserMenu />
+            ) : (
+              <div className="hidden md:flex items-center gap-2">
+                <LoginButton 
+                  provider="google" 
+                  variant="secondary" 
+                  size="sm"
+                  className="text-sm"
+                />
+                <LoginButton 
+                  provider="github" 
+                  variant="secondary" 
+                  size="sm"
+                  className="text-sm"
+                />
+              </div>
+            )}
 
             {/* Mobile Menu Toggle */}
             <button
@@ -225,10 +244,27 @@ const Header = memo(({ darkMode = false, toggleTheme }: HeaderProps) => {
                 >
                   Community
                 </Link>
+                
+                {/* Mobile Authentication */}
                 <div className="px-4 py-2 mt-4 border-t border-gray-100">
-                  <button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-full font-semibold transition-all shadow-sm">
-                    Sign In
-                  </button>
+                  {isAuthenticated ? (
+                    <UserMenu />
+                  ) : (
+                    <div className="space-y-2">
+                      <LoginButton 
+                        provider="google" 
+                        variant="secondary" 
+                        size="md"
+                        fullWidth
+                      />
+                      <LoginButton 
+                        provider="github" 
+                        variant="secondary" 
+                        size="md"
+                        fullWidth
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.nav>

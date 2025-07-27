@@ -162,6 +162,12 @@ body {
   backface-visibility: hidden;
 }
 
+/* Edge blending mask for nebula background */
+.mask-gradient {
+  mask: radial-gradient(ellipse at center, black 40%, transparent 90%);
+  -webkit-mask: radial-gradient(ellipse at center, black 40%, transparent 90%);
+}
+
 /* Custom button styles - Updated for trust-building design */
 .btn-primary {
   @apply bg-primary hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
