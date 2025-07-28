@@ -1,80 +1,82 @@
-# GitHub Pages Deployment Guide
+# Deployment Guide - Prometheus Automation AI Marketplace
 
-## 🚀 How to Deploy to GitHub Pages
+This guide covers the complete deployment process for the Next.js AI marketplace to Vercel.
 
-### Option 1: Automatic Deployment (Recommended)
+## 🚀 Quick Deployment
 
-1. **Enable GitHub Pages in your repository:**
-   - Go to: https://github.com/Prometheus-Automation/store/settings/pages
-   - Under "Source", select "GitHub Actions"
-   - The workflow will automatically deploy on every push to main branch
+### Prerequisites
+- Node.js 18+ installed
+- Vercel CLI installed: `npm i -g vercel`
+- Supabase project set up
+- Stripe account configured
 
-2. **Your website will be available at:**
-   ```
-   https://prometheus-automation.github.io/store/
-   ```
-
-### Option 2: Manual Deployment
-
-If you prefer manual deployment:
-
-1. **Build the project locally:**
-   ```bash
-   npm install
-   npm run build
-   ```
-
-2. **Deploy the `dist` folder:**
-   - Go to repository settings > Pages
-   - Select "Deploy from a branch"
-   - Choose "main" branch and "/dist" folder
-   - Or use `gh-pages` branch (you'll need to push dist contents there)
-
-## ✅ What's Configured
-
-- **GitHub Actions Workflow:** Automatic build and deployment
-- **SPA Routing:** Fixed for GitHub Pages with 404.html redirect
-- **Base Path:** Set to `/store/` for GitHub Pages subdirectory
-- **PWA Support:** Service worker and manifest configured
-- **SEO Optimization:** Meta tags and structured data included
-
-## 🔧 Local Testing
-
-To test the GitHub Pages version locally:
-
+### One-Click Deployment
 ```bash
-# Build with GitHub Pages base path
-npm run build
-
-# Preview the built version
-npm run preview
-# Visit: http://localhost:4173/store/
+# Clone and deploy
+git clone <your-repo>
+cd Store
+npm install
+./deploy-vercel.sh --production --open
 ```
 
-## 📋 Features Available
+## 🔧 Manual Deployment Steps
 
-- ✅ AI Marketplace with product catalog
-- ✅ Shopping cart with Stripe checkout
-- ✅ Product detail pages with routing
-- ✅ Seller dashboard and community pages
-- ✅ PWA functionality (offline support)
-- ✅ Mobile responsive design
-- ✅ SEO optimized for search engines
+### 1. Environment Configuration
 
-## 🌐 Alternative Hosting Options
+**Required Environment Variables in Vercel:**
 
-If you prefer other hosting platforms:
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `NEXT_PUBLIC_APP_URL` | Production URL | `https://store.prometheusautomation.com` |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | `https://xyz.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key | `eyJ...` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service key | `eyJ...` |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key | `pk_live_...` |
+| `STRIPE_SECRET_KEY` | Stripe secret key | `sk_live_...` |
+| `CRON_SECRET` | Secret for cron jobs | `your-random-secret` |
 
-- **Vercel:** Connect your GitHub repo for automatic deployments
-- **Netlify:** Same as Vercel, supports SPA routing natively
-- **Firebase Hosting:** Good for PWAs with offline functionality
+### 2. Deploy
 
-## 🔍 Troubleshooting
+```bash
+# Preview deployment
+vercel
 
-If you see a white screen:
-1. Check the browser console for errors
-2. Ensure GitHub Pages is enabled in repository settings
-3. Wait a few minutes for GitHub Actions to complete deployment
-4. Clear browser cache and try again
+# Production deployment
+vercel --prod
+```
 
-The automatic deployment typically takes 2-3 minutes after pushing to main branch.
+## 🏗️ Architecture Overview
+
+### API Endpoints
+
+| Endpoint | Purpose | Method |
+|----------|---------|--------|
+| `/api/ai/recommendations` | AI recommendations | GET, POST |
+| `/api/ai/pricing` | Dynamic pricing | GET, POST |
+| `/api/ai/search` | Semantic search | GET, POST, PUT |
+| `/api/ai/models` | Model CRUD | GET, POST |
+| `/api/health` | Health monitoring | GET |
+| `/api/sitemap` | SEO sitemap | GET |
+
+### Scheduled Jobs (Cron)
+
+| Job | Schedule | Purpose |
+|-----|----------|---------|
+| `update-pricing` | Every 6 hours | Update model pricing |
+| `recompute-recommendations` | Daily at 2 AM | Refresh recommendations |
+
+## 📈 Post-Deployment Checklist
+
+### Domain Configuration
+- [ ] Add custom domain in Vercel dashboard
+- [ ] Configure DNS records
+- [ ] Verify SSL certificate (automatic)
+
+### Monitoring Setup
+- [ ] Configure uptime monitoring
+- [ ] Set up error alerts
+- [ ] Monitor performance metrics
+
+---
+
+**Status**: Production Ready ✅

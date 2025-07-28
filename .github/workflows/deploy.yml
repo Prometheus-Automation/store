@@ -1,9 +1,15 @@
-name: Deploy to GitHub Pages
+name: Deploy to GitHub Pages (Legacy)
+
+# This workflow is deprecated. Use ci-cd.yml instead for modern deployments.
+# Keeping for backup and reference purposes.
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deploy to GitHub Pages'
+        required: true
+        default: 'false'
 
 permissions:
   contents: read
@@ -11,12 +17,13 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: "pages-legacy"
   cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.event.inputs.force_deploy == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,15 +37,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
-      - name: Build
-        run: npm run build
+      - name: Build for static export
+        run: |
+          npm run build
+          # Note: Next.js static export would go to 'out' directory
+          # This workflow needs updating for Next.js
         env:
-          VITE_SUPABASE_URL: https://lvdediwxnapnsyjsbpgu.supabase.co
-          VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2ZGVkaXd4bmFwbnN5anNicGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MTA3NzksImV4cCI6MjA2OTA4Njc3OX0.fqofg44Au6Va25UQeZ3OY3m5yb18wFgrwc6q-Pwtfz4
-          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
-          VITE_YOUTUBE_KEY: ${{ secrets.YOUTUBE_KEY }}
-          VITE_APP_URL: https://store.prometheusautomation.com
-          VITE_APP_NAME: Prometheus Automation
+          NEXT_PUBLIC_SUPABASE_URL: https://lvdediwxnapnsyjsbpgu.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2ZGVkaXd4bmFwbnN5anNicGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MTA3NzksImV4cCI6MjA2OTA4Njc3OX0.fqofg44Au6Va25UQeZ3OY3m5yb18wFgrwc6q-Pwtfz4
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_APP_URL: https://store.prometheusautomation.com
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -46,7 +54,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          path: '.next/export'
 
   deploy:
     environment:

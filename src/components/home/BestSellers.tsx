@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { TrendingUp, Award, Users } from 'lucide-react';
 import ProductCard from '../ProductCard';
@@ -47,7 +47,7 @@ const BestSellers = memo(({ darkMode = false }: BestSellersProps) => {
           </div>
 
           <Link 
-            to="/bestsellers" 
+            href="/bestsellers" 
             className={`flex items-center space-x-2 font-semibold transition-colors group ${
               darkMode 
                 ? 'text-energy-cyan hover:text-cosmic-white' 

@@ -1,0 +1,6 @@
+[defaults]
+org=prometheus-automation
+project=javascript-nextjs
+
+[auth]
+token=your-sentry-auth-token

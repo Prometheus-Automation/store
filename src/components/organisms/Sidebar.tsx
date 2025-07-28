@@ -2,7 +2,8 @@ import React, { memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Filter, Search, Home, Compass, MessageCircle, Bell, User, BarChart3 } from 'lucide-react';
 import { FilterState } from '../../types';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ interface SidebarProps {
  * Combines filters + navigation for seamless experience preparation for TikTok addiction (Eyal 2014)
  */
 const Sidebar = memo(({ isOpen, onClose, filters, onFiltersChange, productCount, darkMode = false }: SidebarProps) => {
-  const location = useLocation();
+  const pathname = usePathname();
   
   // Navigation items (Whop-style with functional features only)
   const navItems = useMemo(() => [
@@ -124,10 +125,10 @@ const Sidebar = memo(({ isOpen, onClose, filters, onFiltersChange, productCount,
             <div>
               <nav className="space-y-2">
                 {navItems.map((item) => {
-                  const isActive = location.pathname === item.path;
+                  const isActive = pathname === item.path;
                   
                   return (
-                    <Link key={item.id} to={item.path} onClick={onClose}>
+                    <Link key={item.id} href={item.path} onClick={onClose}>
                       <div className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
                         isActive 
                           ? darkMode 

@@ -135,7 +135,7 @@ export class SemanticSearchEngine {
     suggestions.push(...categorySuggestions.slice(0, 3));
     
     // Remove duplicates and return
-    return [...new Set(suggestions)].slice(0, 8);
+    return Array.from(new Set(suggestions)).slice(0, 8);
   }
 
   /**
@@ -165,7 +165,7 @@ export class SemanticSearchEngine {
   private async vectorSearch(queryEmbedding: number[], k: number): Promise<string[]> {
     const similarities: Array<{ modelId: string; similarity: number }> = [];
     
-    for (const [modelId, embedding] of this.modelEmbeddings) {
+    for (const [modelId, embedding] of Array.from(this.modelEmbeddings.entries())) {
       const similarity = this.cosineSimilarity(queryEmbedding, embedding.combinedEmbedding);
       similarities.push({ modelId, similarity });
     }
@@ -375,7 +375,9 @@ export class SemanticSearchEngine {
     // Limit cache size
     if (this.queryEmbeddingCache.size > 1000) {
       const firstKey = this.queryEmbeddingCache.keys().next().value;
-      this.queryEmbeddingCache.delete(firstKey);
+      if (firstKey !== undefined) {
+        this.queryEmbeddingCache.delete(firstKey);
+      }
     }
     
     return embedding;
@@ -591,7 +593,7 @@ class VectorIndex {
   search(queryVector: number[], k: number): Array<{ id: string; similarity: number }> {
     const results: Array<{ id: string; similarity: number }> = [];
     
-    for (const [id, vector] of this.vectors) {
+    for (const [id, vector] of Array.from(this.vectors.entries())) {
       const similarity = this.cosineSimilarity(queryVector, vector);
       results.push({ id, similarity });
     }

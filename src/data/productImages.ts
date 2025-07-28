@@ -82,12 +82,12 @@ export const productColorSchemes = {
 // Get optimized image URL with fallback generation
 export const getProductImage = (productId: string): string => {
   // Try real image first
-  if (productImages[productId]) {
-    return productImages[productId];
+  if (productImages[productId as keyof typeof productImages]) {
+    return productImages[productId as keyof typeof productImages];
   }
   
   // Generate AI-themed SVG as fallback
-  const colors = productColorSchemes[productId] || { primary: '#001f3f', secondary: '#00bfff' };
+  const colors = productColorSchemes[productId as keyof typeof productColorSchemes] || { primary: '#001f3f', secondary: '#00bfff' };
   return generateAIImage(productId, colors);
 };
 

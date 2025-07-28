@@ -50,7 +50,7 @@ class ErrorBoundary extends Component<Props, State> {
     this.setState({ errorInfo });
 
     // In production, send to error tracking service
-    if (import.meta.env.PROD) {
+    if (process.env.NODE_ENV === 'production') {
       // Example integrations:
       // Sentry.captureException(error, { contexts: { errorInfo } });
       // LogRocket.captureException(error);
@@ -115,7 +115,7 @@ class ErrorBoundary extends Component<Props, State> {
             </p>
 
             {/* Show error details in development */}
-            {import.meta.env.DEV && error && (
+            {process.env.NODE_ENV === 'development' && error && (
               <details className="mb-6 text-left">
                 <summary className="text-sm text-gray-500 cursor-pointer mb-2">
                   Technical Details (Dev Mode)
@@ -156,9 +156,9 @@ class ErrorBoundary extends Component<Props, State> {
             </div>
             
             {/* Environment status for debugging */}
-            {import.meta.env.DEV && (
+            {process.env.NODE_ENV === 'development' && (
               <div className="mt-4 text-xs text-gray-400 font-mono">
-                Debug: Retry {retryCount}/3 | {import.meta.env.MODE}
+                Debug: Retry {retryCount}/3 | {process.env.NODE_ENV}
               </div>
             )}
           </div>

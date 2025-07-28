@@ -352,8 +352,8 @@ export class ModelService {
         .gte('created_at', thirtyDaysAgo.toISOString())
 
       const calls_last_30_days = recentTransactions?.length || 0
-      const revenue_last_30_days = recentTransactions?.reduce((sum, t) => sum + t.amount, 0) || 0
-      const unique_users = new Set(recentTransactions?.map(t => t.user_id)).size
+      const revenue_last_30_days = recentTransactions?.reduce((sum: number, t: { amount: number; user_id: string }) => sum + t.amount, 0) || 0
+      const unique_users = new Set(recentTransactions?.map((t: { user_id: string }) => t.user_id)).size
 
       return {
         total_calls: model.total_calls,
@@ -402,12 +402,12 @@ export class ModelService {
       if (error) throw error
 
       // Count categories
-      const categoryCount = (data || []).reduce((acc: Record<string, number>, { category }) => {
+      const categoryCount = (data || []).reduce((acc: Record<string, number>, { category }: { category: string }) => {
         acc[category] = (acc[category] || 0) + 1
         return acc
       }, {})
 
-      return Object.entries(categoryCount).map(([category, count]) => ({ category, count }))
+      return Object.entries(categoryCount).map(([category, count]) => ({ category, count: count as number }))
     } catch (error) {
       console.error('Error fetching categories:', error)
       return []

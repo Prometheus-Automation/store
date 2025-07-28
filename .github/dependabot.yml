@@ -1,0 +1,61 @@
+version: 2
+updates:
+  # Enable version updates for npm
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "sebas"
+    assignees:
+      - "sebas"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    # Group updates for better PR management
+    groups:
+      react-ecosystem:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      next-ecosystem:
+        patterns:
+          - "next*"
+          - "@next/*"
+      testing:
+        patterns:
+          - "jest*"
+          - "@testing-library/*"
+          - "testing-*"
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+    # Auto-merge for minor and patch updates
+    ignore:
+      # Ignore major version updates for critical dependencies
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"  
+        update-types: ["version-update:semver-major"]
+      # Ignore specific vulnerabilities being tracked
+      - dependency-name: "@sentry/nextjs"
+        versions: ["< 7.119.2"]
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "09:00"
+    commit-message:
+      prefix: "ci"
+      include: "scope"

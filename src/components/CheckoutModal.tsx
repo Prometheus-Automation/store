@@ -6,9 +6,9 @@ import CheckoutForm from './CheckoutForm';
 
 // Initialize Stripe with proper error handling
 const getStripeKey = () => {
-  const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+  const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
   if (!key) {
-    console.error('VITE_STRIPE_PUBLISHABLE_KEY is not set');
+    console.error('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set');
     return null;
   }
   return key;

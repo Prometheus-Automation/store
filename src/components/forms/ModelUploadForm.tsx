@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Model Upload Form - Comprehensive AI model submission form
  * Handles model metadata, pricing, demo examples, and file uploads
@@ -5,6 +7,7 @@
  */
 
 import React, { useState } from 'react'
+// @ts-ignore
 import { useForm, Controller } from 'react-hook-form'
 import { useAuth } from '../../contexts/AuthContext'
 import { ModelService } from '../../services/modelService'
@@ -126,6 +129,7 @@ const ModelUploadForm: React.FC<ModelUploadFormProps> = ({ onSuccess, onCancel }
       // Prepare model data
       const modelData: Omit<AIModelInsert, 'developer_id'> = {
         ...data,
+        slug: data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
         demo_input_example,
         demo_output_example,
         tags: Array.isArray(data.tags) ? data.tags : []
@@ -507,7 +511,7 @@ const ModelUploadForm: React.FC<ModelUploadFormProps> = ({ onSuccess, onCancel }
             <Controller
               name="tags"
               control={control}
-              render={({ field }) => (
+              render={({ field }: any) => (
                 <input
                   {...field}
                   className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"

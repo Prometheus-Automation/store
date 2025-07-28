@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Authentication Context - OAuth integration for AI Marketplace
  * Supports Google and GitHub OAuth providers via Supabase

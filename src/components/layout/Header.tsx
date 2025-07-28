@@ -1,5 +1,7 @@
+'use client';
+
 import React, { memo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Menu, X, Brain, Search, Sun, Moon } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
@@ -34,7 +36,7 @@ const Header = memo(({ darkMode = false, toggleTheme }: HeaderProps) => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between h-20">
           {/* Logo - Clean and trustworthy */}
-          <Link to="/" className="flex items-center space-x-3 flex-shrink-0">
+          <Link href="/" className="flex items-center space-x-3 flex-shrink-0">
             <div className="w-10 h-10 bg-gradient-to-r from-energy-cyan to-energy-purple rounded-xl flex items-center justify-center shadow-sm">
               <Brain className="w-6 h-6 text-white" />
             </div>
@@ -81,7 +83,7 @@ const Header = memo(({ darkMode = false, toggleTheme }: HeaderProps) => {
           {/* Desktop Navigation - Minimalist */}
           <nav className="hidden lg:flex items-center space-x-6">
             <Link
-              to="/"
+              href="/"
               className={`transition-colors font-medium ${
                 darkMode 
                   ? 'text-gray-200 hover:text-cosmic-white' 
@@ -91,7 +93,7 @@ const Header = memo(({ darkMode = false, toggleTheme }: HeaderProps) => {
               Home
             </Link>
             <Link
-              to="/discover"
+              href="/discover"
               className={`transition-colors font-medium flex items-center space-x-1 ${
                 darkMode 
                   ? 'text-gray-200 hover:text-cosmic-white' 
@@ -106,7 +108,7 @@ const Header = memo(({ darkMode = false, toggleTheme }: HeaderProps) => {
               }`}>New</span>
             </Link>
             <Link
-              to="/community"
+              href="/community"
               className={`transition-colors font-medium ${
                 darkMode 
                   ? 'text-gray-200 hover:text-cosmic-white' 
@@ -223,14 +225,14 @@ const Header = memo(({ darkMode = false, toggleTheme }: HeaderProps) => {
                 </div>
                 
                 <Link
-                  to="/"
+                  href="/"
                   className="block px-4 py-3 text-gray-700 hover:text-navy hover:bg-blue-50 rounded-lg transition-colors font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Home
                 </Link>
                 <Link
-                  to="/discover"
+                  href="/discover"
                   className="block px-4 py-3 text-gray-700 hover:text-navy hover:bg-blue-50 rounded-lg transition-colors font-medium flex items-center justify-between"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -238,7 +240,7 @@ const Header = memo(({ darkMode = false, toggleTheme }: HeaderProps) => {
                   <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-semibold">New</span>
                 </Link>
                 <Link
-                  to="/community"
+                  href="/community"
                   className="block px-4 py-3 text-gray-700 hover:text-navy hover:bg-blue-50 rounded-lg transition-colors font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * User Menu Component - Authenticated user navigation
  * Displays user avatar, menu, and sign out option
@@ -5,7 +7,8 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { 
   User, 
@@ -27,7 +30,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
   const { user, isDeveloper, signOut } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -45,7 +48,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
     try {
       await signOut()
       toast.success('Signed out successfully')
-      navigate('/')
+      router.push('/')
       setIsOpen(false)
     } catch (error: any) {
       toast.error('Failed to sign out')
@@ -154,7 +157,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
                 return (
                   <Link
                     key={item.href}
-                    to={item.href}
+                    href={item.href}
                     onClick={() => setIsOpen(false)}
                     className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >

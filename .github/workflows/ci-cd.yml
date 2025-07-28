@@ -1,0 +1,225 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  NEXT_TELEMETRY_DISABLED: 1
+
+jobs:
+  # Security and dependency audit
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run security audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+        
+      - name: Check for vulnerabilities
+        run: |
+          if [ $(npm audit --audit-level=high --json | jq '.metadata.vulnerabilities.high + .metadata.vulnerabilities.critical') -gt 0 ]; then
+            echo "High or critical vulnerabilities found!"
+            npm audit --audit-level=high
+            exit 1
+          fi
+
+  # Code quality and testing
+  test:
+    name: Test & Quality
+    runs-on: ubuntu-latest
+    needs: security
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Type check
+        run: npm run type-check
+        
+      - name: Lint code
+        run: npm run lint
+        
+      - name: Run tests
+        run: npm run test
+        env:
+          CI: true
+          
+  # Build verification
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: [security, test]
+    outputs:
+      build-success: ${{ steps.build-check.outputs.success }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build application
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          
+      - name: Verify build output
+        id: build-check
+        run: |
+          if [ -d ".next" ] && [ -f ".next/BUILD_ID" ]; then
+            echo "Build successful - .next directory exists"
+            echo "success=true" >> $GITHUB_OUTPUT
+            ls -la .next/
+          else
+            echo "Build failed - .next directory missing"
+            echo "success=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: |
+            .next/
+            public/
+            package.json
+            next.config.js
+          retention-days: 1
+
+  # Performance and size analysis
+  analyze:
+    name: Bundle Analysis
+    runs-on: ubuntu-latest
+    needs: build
+    if: needs.build.outputs.build-success == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Analyze bundle
+        run: npm run analyze
+        env:
+          ANALYZE: true
+          
+  # Deploy to staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build, analyze]
+    if: github.ref == 'refs/heads/develop' && needs.build.outputs.build-success == 'true'
+    environment:
+      name: staging
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+          
+      - name: Deploy to Vercel Staging
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+          working-directory: ./
+
+  # Deploy to production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, analyze]
+    if: github.ref == 'refs/heads/main' && needs.build.outputs.build-success == 'true'
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+          
+      - name: Deploy to Vercel Production
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+          working-directory: ./
+          
+      - name: Update deployment status
+        run: |
+          echo "🚀 Production deployment completed"
+          echo "URL: ${{ steps.deploy.outputs.preview-url }}"
+
+  # Cleanup
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    steps:
+      - name: Delete artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: build-files
+          failOnError: false

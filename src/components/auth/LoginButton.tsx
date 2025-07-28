@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Login Button Component - OAuth authentication UI
  * Provides Google and GitHub sign-in options

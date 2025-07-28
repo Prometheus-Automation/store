@@ -2,18 +2,18 @@ export interface Product {
   id: number | string;
   name: string;
   tagline: string;
-  provider: string;
-  category: 'Language Model' | 'Customer Service' | 'Sales' | 'Marketing' | 'Data' | 'Workflow' | 'Integration';
+  provider?: string;
+  category: 'Language Model' | 'Customer Service' | 'Sales' | 'Marketing' | 'Data' | 'Workflow' | 'Integration' | 'tools' | 'agents' | 'automations';
   price: number;
   originalPrice?: number;
-  unit: string;
+  unit?: string;
   image: string;
   badge?: string;
   badgeColor?: string;
   rating: number;
   reviews: number;
   features: string[];
-  stats: Record<string, string>;
+  stats?: Record<string, string>;
   description?: string;
   videoUrl?: string;
   apiPricing?: {
@@ -24,6 +24,8 @@ export interface Product {
   source?: 'n8n' | 'Zapier' | 'Python' | 'OpenAI' | 'Anthropic' | 'xAI' | 'Make';
   useCase?: 'productivity' | 'marketing' | 'sales' | 'support' | 'data' | 'content';
   difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  tags?: string[];
+  estimatedSetupTime?: string;
 }
 
 export interface User {
@@ -154,15 +156,25 @@ export interface FacetedFiltersProps {
   setShowFilters: (show: boolean) => void;
 }
 
-// Vite environment variables
-interface ImportMetaEnv {
-  readonly VITE_STRIPE_PUBLISHABLE_KEY: string;
-  readonly VITE_APP_URL: string;
-  readonly VITE_APP_NAME: string;
-  readonly VITE_SUPABASE_URL: string;
-  readonly VITE_SUPABASE_ANON_KEY: string;
+// Next.js environment variables
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      readonly NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: string;
+      readonly NEXT_PUBLIC_APP_URL: string;
+      readonly NEXT_PUBLIC_APP_NAME: string;
+      readonly NEXT_PUBLIC_SUPABASE_URL: string;
+      readonly NEXT_PUBLIC_SUPABASE_ANON_KEY: string;
+      readonly STRIPE_SECRET_KEY: string;
+      readonly SUPABASE_SERVICE_ROLE_KEY: string;
+    }
+  }
 }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
+export interface RocketAnimation {
+  id: string;
+  x: number;
+  y: number;
+  scale: number;
+  rotate: number;
 }

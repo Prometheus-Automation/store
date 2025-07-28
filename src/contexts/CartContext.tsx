@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, createContext, useContext } from 'react';
 import toast from 'react-hot-toast';
 import { Product, CartItem, CartContextType } from '../types';

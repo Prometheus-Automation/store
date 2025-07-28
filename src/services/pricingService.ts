@@ -42,7 +42,12 @@ interface MarketConditions {
 
 export class DynamicPricingEngine {
   private modelPriceHistory: Map<string, number[]> = new Map();
-  private marketConditions: MarketConditions;
+  private marketConditions: MarketConditions = {
+    overallDemand: 1.0,
+    competitiveIntensity: 1.0,
+    marketSentiment: 1.0,
+    economicIndicators: 1.0
+  };
   private pricingConstraints: Map<string, PricingConstraints> = new Map();
   private rewardHistory: number[] = [];
   

@@ -1,6 +1,6 @@
 import React, { memo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Star, Heart, ShoppingCart, Eye } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../contexts/CartContext';
@@ -85,7 +85,7 @@ const ProductCard = memo(({ product, onQuickView, onAddToCart, darkMode = false 
       <div className="space-y-3">
         <div>
           <Link 
-            to={`/product/${product.id}`}
+            href={`/product/${product.id}`}
             className={`font-semibold text-lg leading-tight mb-1 hover:text-primary transition-colors block ${
               darkMode ? 'text-gray-100' : 'text-navy'
             }`}

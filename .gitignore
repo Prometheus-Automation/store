@@ -99,3 +99,6 @@ logs
 # Temporary folders
 tmp/
 temp/
+# Next.js build output
+.next/
+tsconfig.tsbuildinfo

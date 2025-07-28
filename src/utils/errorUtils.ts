@@ -5,7 +5,7 @@
 
 // Safe Stripe initialization with fallback
 export const initializeStripe = () => {
-  const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+  const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
   
   if (!key || key === 'your-stripe-key' || key.includes('demo')) {
     console.warn('⚠️ Stripe key not configured. Using test mode.');
@@ -22,8 +22,8 @@ export const initializeStripe = () => {
 
 // Safe Supabase initialization with mock fallback
 export const initializeSupabase = () => {
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   
   if (!url || !anonKey || url.includes('your-project') || anonKey.includes('your-anon-key')) {
     console.warn('⚠️ Supabase not configured. Using mock client.');
@@ -69,7 +69,7 @@ export const logError = (error: Error, context?: string) => {
   console.error('🚨 Application Error:', errorInfo);
   
   // In production, send to error tracking service
-  if (import.meta.env.PROD && typeof window !== 'undefined') {
+  if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined') {
     // Example: Send to Sentry, LogRocket, etc.
     // sentryLogger.captureException(error, { extra: errorInfo });
   }
@@ -90,14 +90,14 @@ export const validateEnvironment = (): { isValid: boolean; issues: string[] } =>
   
   // Check required environment variables
   const requiredEnvVars = [
-    'VITE_APP_URL',
-    'VITE_STRIPE_PUBLISHABLE_KEY',
-    'VITE_SUPABASE_URL',
-    'VITE_SUPABASE_ANON_KEY'
+    'NEXT_PUBLIC_APP_URL',
+    'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
+    'NEXT_PUBLIC_SUPABASE_URL',
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY'
   ];
   
   requiredEnvVars.forEach(envVar => {
-    const value = import.meta.env[envVar];
+    const value = process.env[envVar];
     if (!value || value.includes('your-') || value.includes('demo')) {
       issues.push(`${envVar} not properly configured`);
     }

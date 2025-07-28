@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * OAuth Test Component - Testing OAuth Configuration
  * Use this to verify Google and GitHub OAuth are working correctly
@@ -36,8 +38,8 @@ export function OAuthTest() {
 
   // Check configuration
   const checkConfig = () => {
-    const url = import.meta.env.VITE_SUPABASE_URL
-    const key = import.meta.env.VITE_SUPABASE_ANON_KEY
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     const redirectUrl = `${window.location.origin}/auth/callback`
 
     setConfigStatus({

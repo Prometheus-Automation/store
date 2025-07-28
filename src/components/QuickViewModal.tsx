@@ -108,7 +108,7 @@ const QuickViewModal = ({ product, onClose }: QuickViewModalProps) => {
             <div className="mb-6">
               <h3 className="font-semibold text-gray-900 mb-3">Performance Stats</h3>
               <div className="grid grid-cols-3 gap-4">
-                {Object.entries(product.stats).map(([key, value]) => (
+                {Object.entries(product.stats || {}).map(([key, value]) => (
                   <div key={key} className="text-center">
                     <div className="text-lg font-bold text-blue-600">{value}</div>
                     <div className="text-xs text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
