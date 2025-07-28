@@ -8,13 +8,18 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('cart');
-    return saved ? JSON.parse(saved) : [];
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('cart');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
   });
   const [showCheckout, setShowCheckout] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(items));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cart', JSON.stringify(items));
+    }
   }, [items]);
 
   const addItem = (product: Product) => {
