@@ -1,6 +1,9 @@
 import { Metadata } from 'next';
 import HomePage from '@/components/pages/HomePage';
 
+// Force dynamic rendering for homepage
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'AI Marketplace - Premium Models, Agents & Automations',
   description: 'Discover the largest marketplace for AI models, agents, and automations. From ChatGPT to custom workflows - find the perfect AI solution for your needs.',
