@@ -7,6 +7,7 @@ import { stripePromise } from '@/lib/stripe';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
+import ClientOnly from '@/components/ClientOnly';
 import { useState } from 'react';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -22,26 +23,28 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   }));
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <Elements stripe={stripePromise}>
-          <AuthProvider>
-            <CartProvider>
-              {children}
-              <Toaster
-                position="top-right"
-                toastOptions={{
-                  duration: 4000,
-                  style: {
-                    background: '#333',
-                    color: '#fff',
-                  },
-                }}
-              />
-            </CartProvider>
-          </AuthProvider>
-        </Elements>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ClientOnly>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <Elements stripe={stripePromise}>
+            <AuthProvider>
+              <CartProvider>
+                {children}
+                <Toaster
+                  position="top-right"
+                  toastOptions={{
+                    duration: 4000,
+                    style: {
+                      background: '#333',
+                      color: '#fff',
+                    },
+                  }}
+                />
+              </CartProvider>
+            </AuthProvider>
+          </Elements>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ClientOnly>
   );
 }
