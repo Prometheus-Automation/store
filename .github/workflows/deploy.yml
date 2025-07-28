@@ -1,15 +1,9 @@
-name: Deploy to GitHub Pages (Legacy)
-
-# This workflow is deprecated. Use ci-cd.yml instead for modern deployments.
-# Keeping for backup and reference purposes.
+name: Deploy to GitHub Pages
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
-    inputs:
-      force_deploy:
-        description: 'Force deploy to GitHub Pages'
-        required: true
-        default: 'false'
 
 permissions:
   contents: read
@@ -17,13 +11,12 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages-legacy"
+  group: "pages"
   cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.event.inputs.force_deploy == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,22 +24,27 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '18.20.6'
           cache: 'npm'
           
       - name: Install dependencies
         run: npm ci
         
-      - name: Build for static export
-        run: |
-          npm run build
-          # Note: Next.js static export would go to 'out' directory
-          # This workflow needs updating for Next.js
+      - name: Build application
+        run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://lvdediwxnapnsyjsbpgu.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2ZGVkaXd4bmFwbnN5anNicGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MTA3NzksImV4cCI6MjA2OTA4Njc3OX0.fqofg44Au6Va25UQeZ3OY3m5yb18wFgrwc6q-Pwtfz4
-          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
-          NEXT_PUBLIC_APP_URL: https://store.prometheusautomation.com
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_51RoIkZKNIEHyWHKLeDKfj6U0lDs2DH2HK3OY8J2Eec1GVbXTWCLLlqJArqWTq8dhuVpTI8G6QyYhW6V1UGsgMaf500oIpt7aMl
+          STRIPE_SECRET_KEY: sk_test_51RoIkZKNIEHyWHKLcKK9L758p88ArYWZnjoWH3EsV8tCv3CzEfV8ZaN6kLVHicuG0q6ablmWntrIgT7QRdIQfj2R00m7gSFthz
+          NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: G-2W0H2QKN0H
+          NEXT_PUBLIC_SENTRY_DSN: https://792e980d7cdb24541a8523eb7395d4db@o4509747749453824.ingest.us.sentry.io/4509747750764544
+          NEXT_PUBLIC_APP_URL: https://prometheus-automation.github.io/store
+          CSRF_SECRET: Kqxo7zy/h/E6uw945Zx1xtP6R9zac0mbR1FMn0ocJDg=
+          REVALIDATE_SECRET: oNNbKl+La89PhLQVZRjTbEa8sBZxPhBD9AUC43NkQe0=
+          CRON_SECRET: eeqcLf1xitaB7FjOKzyNyZ8BOpZa+3qLav6FlL3ebTE=
+          UPSTASH_REDIS_REST_URL: https://normal-halibut-48641.upstash.io
+          UPSTASH_REDIS_REST_TOKEN: Ab4BAAIjcDFhMjU0NWE5NWJkYjU0YzEwYWQyNTMxYjY5MTUzMjQ0YXAxMA
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -54,7 +52,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.next/export'
+          path: '.next/server/app'
 
   deploy:
     environment:

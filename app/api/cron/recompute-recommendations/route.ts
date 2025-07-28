@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import HybridRecommendationEngine from '@/services/recommendationService';
 
+// Force dynamic route for cron jobs
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Verify this is a cron request from Vercel

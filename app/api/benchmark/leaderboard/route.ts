@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import BenchmarkingService from '@/services/benchmarkingService';
 
+// Force dynamic route for leaderboard API
+export const dynamic = 'force-dynamic';
+
 // Initialize the benchmarking service (singleton pattern)
 let benchmarkService: BenchmarkingService | null = null;
 

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import QueueService from '@/services/queueService';
 
+// Force dynamic route for queue analytics API
+export const dynamic = 'force-dynamic';
+
 // Initialize the queue service (singleton pattern)
 let queueService: QueueService | null = null;
 
